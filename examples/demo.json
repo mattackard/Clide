@@ -1,0 +1,29 @@
+{
+    "user": "demo@clide",
+    "directory": "/",
+    "typespeed": 2,
+    "humanize": 0.5,
+    "commands": [
+        {
+            "cmd": "echo Hello World",
+            "typed": true,
+            "window": 1,
+            "predelay": 500,
+            "postdelay": 1200
+        },
+        {
+            "cmd": "whoami",
+            "typed": true,
+            "window": 1,
+            "predelay": 1000,
+            "postdelay": 0
+        },
+        {
+            "cmd": "sudo apt update",
+            "typed": true,
+            "window": 1,
+            "predelay": 2000,
+            "postdelay": 500
+        }
+    ]
+}
