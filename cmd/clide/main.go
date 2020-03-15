@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,7 +16,7 @@ type Config struct {
 	User      string    `json:"user"`
 	Directory string    `json:"directory"`
 	TypeSpeed int       `json:"typeSpeed"`
-	Humanize  float32   `json:"humanize"`
+	Humanize  float64   `json:"humanize"`
 	Commands  []Command `json:"commands"`
 }
 
@@ -85,7 +86,7 @@ func writeCommand(cmd Command, cfg Config, done chan bool) {
 	if cmd.Typed {
 		//print each command character using the typespeed and humanize values
 		for i, v := range cmd.CmdString {
-			time.Sleep(time.Duration(cfg.TypeSpeed) * time.Millisecond)
+			time.Sleep(getKeyDelay(cfg))
 			fmt.Print(string(v))
 			if i == len(cmd.CmdString)-1 {
 				//wait before executing the command, but after writing to the terminal
@@ -102,4 +103,18 @@ func writeCommand(cmd Command, cfg Config, done chan bool) {
 		fmt.Print("\n")
 		done <- true
 	}
+}
+
+//getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio
+func getKeyDelay(cfg Config) time.Duration {
+	if cfg.Humanize > 0 {
+		//set up a seeded random
+		rand.Seed(time.Now().UnixNano())
+
+		//calculate speed variance based on humanize field
+		variance := (1 - cfg.Humanize - rand.Float64()) * float64(cfg.TypeSpeed)
+
+		return time.Duration(float64(cfg.TypeSpeed)+variance) * time.Millisecond
+	}
+	return time.Duration(cfg.TypeSpeed) * time.Millisecond
 }

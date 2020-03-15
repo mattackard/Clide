@@ -1,8 +1,8 @@
 {
     "user": "demo@clide",
     "directory": "/",
-    "typespeed": 100,
-    "humanize": 0.5,
+    "typespeed": 200,
+    "humanize": 0.9,
     "commands": [
         {
             "cmd": "echo Hello World",
