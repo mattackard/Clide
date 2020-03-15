@@ -30,6 +30,7 @@ The demo file in the `examples` folder is a good place to start tweaking the set
 ## Built With
 
 * [Go](http://golang.org) - The Go programming language
+* [gookit/color](https://github.com/gookit/color) - Terminal text coloring
 
 ## Versioning
 

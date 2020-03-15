@@ -3,6 +3,7 @@
     "directory": "/",
     "typespeed": 200,
     "humanize": 0.9,
+    "hideWarnings": false,
     "commands": [
         {
             "cmd": "echo Hello World",
@@ -13,8 +14,6 @@
         },
         {
             "cmd": "whoami",
-            "typed": false,
-            "window": 1,
             "predelay": 1000,
             "postdelay": 1000
         },
