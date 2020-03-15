@@ -47,7 +47,6 @@ func main() {
 			panic(err)
 		}
 	}
-
 }
 
 //prompt returns a string used to emulate a terminal prompt
@@ -63,17 +62,10 @@ func command(cmd Command, cfg Config) error {
 	command.Stderr = os.Stderr
 	command.Stdout = os.Stdout
 
-	//wait before writing the command to the terminal
-	time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
-
 	//type the command into the console and wait for it to finish typing before further execution
 	written := make(chan bool, 1)
 	go writeCommand(cmd, cfg, written)
 	<-written
-
-	//wait before executing the command, but after writing to the terminal
-	time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
-	fmt.Print("\n")
 
 	err := command.Run()
 	if err != nil {
@@ -84,18 +76,30 @@ func command(cmd Command, cfg Config) error {
 
 //writeCommand prints out the given command and emulates a terminal prompt before it
 func writeCommand(cmd Command, cfg Config, done chan bool) {
+
+	fmt.Print(prompt(cfg))
+
+	//wait before writing the command to the terminal
+	time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
+
 	if cmd.Typed {
-		fmt.Print(prompt(cfg))
+		//print each command character using the typespeed and humanize values
 		for i, v := range cmd.CmdString {
 			time.Sleep(time.Duration(cfg.TypeSpeed) * time.Millisecond)
 			fmt.Print(string(v))
 			if i == len(cmd.CmdString)-1 {
+				//wait before executing the command, but after writing to the terminal
+				time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
+				fmt.Print("\n")
 				done <- true
 			}
 		}
 	} else {
-		fmt.Print(prompt(cfg), cmd.CmdString)
+		fmt.Print(cmd.CmdString)
+
+		//wait before executing the command, but after writing to the terminal
+		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
+		fmt.Print("\n")
 		done <- true
 	}
-
 }
