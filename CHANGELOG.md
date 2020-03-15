@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for emulated typing in terminal
-- Support for humanizing typed input
+- Support for humanizing typed output
 
 ### Changed
 
