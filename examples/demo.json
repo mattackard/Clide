@@ -1,7 +1,7 @@
 {
     "user": "demo@clide",
     "directory": "/",
-    "typespeed": 2,
+    "typespeed": 100,
     "humanize": 0.5,
     "commands": [
         {
@@ -13,10 +13,10 @@
         },
         {
             "cmd": "whoami",
-            "typed": true,
+            "typed": false,
             "window": 1,
             "predelay": 1000,
-            "postdelay": 0
+            "postdelay": 1000
         },
         {
             "cmd": "sudo apt update",
