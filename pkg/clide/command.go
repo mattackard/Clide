@@ -27,7 +27,8 @@ func (cmd Command) Validate() {
 
 //IsInstalled checks to see if the command is installed on the system
 func (cmd Command) IsInstalled() bool {
-	if _, err := exec.LookPath(strings.Split(cmd.CmdString, " ")[0]); err != nil {
+	program := strings.Split(cmd.CmdString, " ")[0]
+	if _, err := exec.LookPath(program); err != nil {
 		return false
 	}
 	return true
@@ -38,13 +39,16 @@ func (cmd Command) Run(cfg Config) error {
 	split := strings.Split(cmd.CmdString, " ")
 	program := split[0]
 	command := exec.Command(program, split[1:]...)
-	command.Stderr = os.Stderr
-	command.Stdout = os.Stdout
 
-	//type the command into the console and wait for it to finish typing before further execution
-	written := make(chan bool, 1)
-	go writeCommand(cmd, cfg, written)
-	<-written
+	if !cmd.Hidden {
+		command.Stderr = os.Stderr
+		command.Stdout = os.Stdout
+
+		//type the command into the console and wait for it to finish typing before further execution
+		written := make(chan bool, 1)
+		go writeCommand(cmd, cfg, written)
+		<-written
+	}
 
 	err := command.Run()
 	if err != nil {
