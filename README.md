@@ -31,6 +31,7 @@ The demo file in the `examples` folder is a good place to start tweaking the set
 
 * [Go](http://golang.org) - The Go programming language
 * [gookit/color](https://github.com/gookit/color) - Terminal text coloring
+* [eiannone/keyboard](https://github.com/eiannone/keyboard) - Keyboard event handling
 
 ## Versioning
 
