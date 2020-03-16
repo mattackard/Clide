@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 //Command holds a single clide command
@@ -50,9 +51,18 @@ func (cmd Command) Run(cfg Config) error {
 		<-written
 	}
 
-	err := command.Run()
-	if err != nil {
-		return err
+	if cmd.Timeout != 0 {
+		err := command.Start()
+		if err != nil {
+			return err
+		}
+		time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+		command.Process.Kill()
+	} else {
+		err := command.Run()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
