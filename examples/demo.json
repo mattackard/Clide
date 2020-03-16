@@ -18,6 +18,40 @@
             "postdelay": 1000
         },
         {
+            "cmd": "ping google.com",
+            "typed": true,
+            "window": 1,
+            "predelay": 500,
+            "postdelay": 1200,
+            "timeout": 5
+        },
+        {
+            "cmd": "echo creating newFile.txt in the background",
+            "typed": true,
+            "window": 1,
+            "predelay": 1000,
+            "postdelay": 1000
+        },
+        {
+            "cmd": "touch newFile.txt",
+            "hidden": true,
+            "window": 1
+        },
+        {
+            "cmd": "ls",
+            "typed": true,
+            "window": 1,
+            "predelay": 1000,
+            "postdelay": 1000
+        },
+        {
+            "cmd": "rm newFile.txt",
+            "typed": true,
+            "window": 1,
+            "predelay": 1000,
+            "postdelay": 1000
+        },
+        {
             "cmd": "sudo apt update",
             "typed": true,
             "window": 1,
