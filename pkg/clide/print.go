@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/eiannone/keyboard"
 )
 
 //prompt returns a string used to emulate a terminal prompt
@@ -16,8 +18,23 @@ func writeCommand(cmd Command, cfg Config, done chan bool) {
 
 	fmt.Print(prompt(cfg))
 
-	//wait before writing the command to the terminal
-	time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
+	if cmd.WaitForKey {
+		err := keyboard.Open()
+		if err != nil {
+			panic(err)
+		}
+		defer keyboard.Close()
+
+		//keep looping until key from TriggerKeys is pressed
+		for {
+			if keyPressed(cfg.TiggerKeys) {
+				break
+			}
+		}
+	} else {
+		//wait before writing the command to the terminal
+		time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
+	}
 
 	if cmd.Typed {
 		//print each command character using the typespeed and humanize values
@@ -53,4 +70,24 @@ func getKeyDelay(cfg Config) time.Duration {
 		return time.Duration(float64(cfg.TypeSpeed)+variance) * time.Millisecond
 	}
 	return time.Duration(cfg.TypeSpeed) * time.Millisecond
+}
+
+//keyPressed returns whether or not the key pressed in any []string
+func keyPressed(keys []string) bool {
+	char, _, err := keyboard.GetKey()
+	if err != nil {
+		panic(err)
+	}
+	for _, key := range keys {
+		//convert key(string) into rune slice
+		runes := []rune(key)
+
+		//check all runes in slice against keyboard char
+		for _, r := range runes {
+			if r == char {
+				return true
+			}
+		}
+	}
+	return false
 }

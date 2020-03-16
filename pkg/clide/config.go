@@ -16,6 +16,7 @@ type Config struct {
 	TypeSpeed    int       `json:"typeSpeed"`
 	Humanize     float64   `json:"humanize"`
 	HideWarnings bool      `json:"hideWarnings"`
+	TiggerKeys   []string  `json:"triggerKeys"`
 	Commands     []Command `json:"commands"`
 }
 

@@ -9,13 +9,14 @@ import (
 
 //Command holds a single clide command
 type Command struct {
-	CmdString string `json:"cmd"`
-	Typed     bool   `json:"typed"`
-	Window    string `json:"window"`
-	PreDelay  int    `json:"predelay"`
-	PostDelay int    `json:"postdelay"`
-	Timeout   int    `json:"timeout"`
-	Hidden    bool   `json:"hidden"`
+	CmdString  string `json:"cmd"`
+	Typed      bool   `json:"typed"`
+	Window     string `json:"window"`
+	PreDelay   int    `json:"predelay"`
+	PostDelay  int    `json:"postdelay"`
+	Timeout    int    `json:"timeout"`
+	Hidden     bool   `json:"hidden"`
+	WaitForKey bool   `json:"waitForKey"`
 }
 
 //Validate checks for potential issues in a Command
