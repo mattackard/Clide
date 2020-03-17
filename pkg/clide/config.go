@@ -11,13 +11,14 @@ import (
 
 //Config holds the global configuration for a clide demo
 type Config struct {
-	User         string    `json:"user"`
-	Directory    string    `json:"directory"`
-	TypeSpeed    int       `json:"typeSpeed"`
-	Humanize     float64   `json:"humanize"`
-	HideWarnings bool      `json:"hideWarnings"`
-	TiggerKeys   []string  `json:"triggerKeys"`
-	Commands     []Command `json:"commands"`
+	User           string    `json:"user"`
+	Directory      string    `json:"directory"`
+	TypeSpeed      int       `json:"typeSpeed"`
+	Humanize       float64   `json:"humanize"`
+	HideWarnings   bool      `json:"hideWarnings"`
+	ClearBeforeAll bool      `json:"clearBeforeAll"`
+	TiggerKeys     []string  `json:"triggerKeys"`
+	Commands       []Command `json:"commands"`
 }
 
 //Validate checks for potential issues in a Config and

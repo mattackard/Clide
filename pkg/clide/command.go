@@ -9,14 +9,15 @@ import (
 
 //Command holds a single clide command
 type Command struct {
-	CmdString  string `json:"cmd"`
-	Typed      bool   `json:"typed"`
-	Window     string `json:"window"`
-	PreDelay   int    `json:"predelay"`
-	PostDelay  int    `json:"postdelay"`
-	Timeout    int    `json:"timeout"`
-	Hidden     bool   `json:"hidden"`
-	WaitForKey bool   `json:"waitForKey"`
+	CmdString      string `json:"cmd"`
+	Typed          bool   `json:"typed"`
+	Window         string `json:"window"`
+	PreDelay       int    `json:"predelay"`
+	PostDelay      int    `json:"postdelay"`
+	Timeout        int    `json:"timeout"`
+	Hidden         bool   `json:"hidden"`
+	WaitForKey     bool   `json:"waitForKey"`
+	ClearBeforeRun bool   `json:"clearBeforeRun"`
 }
 
 //Validate checks for potential issues in a Command
@@ -38,6 +39,12 @@ func (cmd Command) IsInstalled() bool {
 
 //Run runs a cli command with options to wait before and after execution
 func (cmd Command) Run(cfg Config) error {
+	//clear terminal if set in config or command
+	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
+		clearTerminal()
+	}
+
+	//parse program from command string
 	split := strings.Split(cmd.CmdString, " ")
 	program := split[0]
 	command := exec.Command(program, split[1:]...)
@@ -66,4 +73,10 @@ func (cmd Command) Run(cfg Config) error {
 		}
 	}
 	return nil
+}
+
+func clearTerminal() {
+	command := exec.Command("clear")
+	command.Stdout = os.Stdout
+	command.Run()
 }

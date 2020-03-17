@@ -4,6 +4,7 @@
     "typespeed": 100,
     "humanize": 0.9,
     "hideWarnings": false,
+    "clearBeforeAll": false,
     "triggerKeys": [
         "/",
         "z",
@@ -13,6 +14,7 @@
         {
             "cmd": "echo Welcome to the Clide demo!",
             "typed": true,
+            "clearBeforeRun": true,
             "window": 1,
             "predelay": 500,
             "postdelay": 800
@@ -46,6 +48,7 @@
         {
             "cmd": "ping google.com",
             "typed": true,
+            "clearBeforeRun": true,
             "window": 1,
             "predelay": 500,
             "postdelay": 1200,
@@ -54,6 +57,7 @@
         {
             "cmd": "echo You can also run hidden commands that will run in the background!",
             "typed": true,
+            "clearBeforeRun": true,
             "window": 1,
             "predelay": 1000,
             "postdelay": 1000
@@ -92,8 +96,9 @@
             "postdelay": 1000
         },
         {
-            "cmd": "echo Check out the json files in the projects '/examples' directory to mess around with more options.",
+            "cmd": "echo Check out the json files in the projects '/examples' directory to see more demos and to look at example json configurations.",
             "typed": true,
+            "clearBeforeRun": true,
             "window": 1,
             "predelay": 1000,
             "postdelay": 1000
@@ -104,6 +109,11 @@
             "window": 1,
             "predelay": 1000,
             "postdelay": 1000
+        },
+        {
+            "cmd": "clear",
+            "window": 1,
+            "predelay": 3000
         }
     ]
 }
