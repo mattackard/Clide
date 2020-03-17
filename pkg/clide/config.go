@@ -54,7 +54,7 @@ func (cfg Config) Validate() {
 
 		//comfirm user wants to run program even though uninstalled commands will be skipped
 		if len(notInstalled) != 0 {
-			color.Println("<yellow>WARNING</>: At least one command is not installed on the system! The following commands will be skipped:")
+			color.Println("<comment>WARNING</>: At least one command is not installed on the system! The following commands will be skipped:")
 			for _, badCmd := range notInstalled {
 				split := strings.Split(badCmd, " ")
 				joined := strings.Join(split[1:], " ")
