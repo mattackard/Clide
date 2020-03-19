@@ -66,21 +66,28 @@ func main() {
 		Humanize: 0.9,
 	}
 
+	//reset window background color
+	typer, err = clide.ClearWindow(typer)
+	if err != nil {
+		panic(err)
+	}
+
 	//check if os.Args[1] exists
 	if len(os.Args) < 2 {
 		fmt.Println("You must provide a clide configured json file to run a demo.")
-		fmt.Println(typer.Pos)
 		typer.Pos, err = sdltyper.Print(typer, "You must provide a clide configured json file to run a demo.")
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n" + helpText)
-		fmt.Println(typer.Pos)
+		typer.Pos.X = 20
+		typer.Pos.Y += 20
 		typer.Pos, err = sdltyper.Print(typer, helpText)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(typer.Pos)
+		typer.Pos.X = 5
+		typer.Pos.Y += 20
 		typer.Pos, err = sdltyper.Print(typer, "Exiting in 10 seconds")
 		if err != nil {
 			panic(err)
