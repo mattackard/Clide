@@ -115,6 +115,7 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 
 func clearTerminal(typer sdltyper.Typer) (sdltyper.Typer, error) {
 	var surface *sdl.Surface
+	var backgroundColor sdl.Color
 	var err error
 
 	//get surface info
@@ -129,7 +130,8 @@ func clearTerminal(typer sdltyper.Typer) (sdltyper.Typer, error) {
 		W: surface.W,
 		H: surface.H,
 	}
-	surface.FillRect(&rect, 0)
+	backgroundColor = sdl.Color{R: 255, G: 30, B: 30, A: 30}
+	surface.FillRect(&rect, backgroundColor.Uint32())
 
 	//draw the rect and update typer position
 	typer.Window.UpdateSurface()
@@ -139,10 +141,6 @@ func clearTerminal(typer sdltyper.Typer) (sdltyper.Typer, error) {
 		H: 0,
 		W: 0,
 	}
-
-	// command := exec.Command("clear")
-	// command.Stdout = os.Stdout
-	// command.Run()
 
 	return typer, nil
 }

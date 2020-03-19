@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	fontPath = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-	fontSize = 16
+	fontPath = "assets/UbuntuMono-B.ttf"
+	fontSize = 18
 	helpText = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
 		clide-sh script.sh		converts script.sh into script.json formatted as a clide demo
