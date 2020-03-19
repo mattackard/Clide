@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/mattackard/Clide/pkg/sdltyper"
 	"github.com/veandco/go-sdl2/sdl"
 
 	"github.com/eiannone/keyboard"
@@ -16,13 +15,13 @@ func prompt(cfg Config) string {
 }
 
 //writeCommand prints out the given command and emulates a terminal prompt before it
-func writeCommand(cmd Command, cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error) {
+func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 
 	//print terminal prompt
 	typer.Pos.X = 5
-	pos, err := sdltyper.Print(typer, prompt(cfg))
+	pos, err := Print(typer, prompt(cfg))
 	if err != nil {
-		return sdltyper.Typer{}, err
+		return Typer{}, err
 	}
 
 	if cmd.WaitForKey {
@@ -50,7 +49,7 @@ func writeCommand(cmd Command, cfg Config, typer sdltyper.Typer) (sdltyper.Typer
 	}
 
 	//set typer x position after command prompt
-	typer.Pos = sdltyper.Position{
+	typer.Pos = Position{
 		X: pos.X,
 		Y: typer.Pos.Y,
 		H: pos.H,
@@ -59,14 +58,14 @@ func writeCommand(cmd Command, cfg Config, typer sdltyper.Typer) (sdltyper.Typer
 
 	//type of print command to window
 	if cmd.Typed {
-		typer.Pos, err = sdltyper.Type(typer, cmd.CmdString)
+		typer.Pos, err = Type(typer, cmd.CmdString)
 		if err != nil {
-			return sdltyper.Typer{}, err
+			return Typer{}, err
 		}
 	} else {
-		typer.Pos, err = sdltyper.Print(typer, cmd.CmdString)
+		typer.Pos, err = Print(typer, cmd.CmdString)
 		if err != nil {
-			return sdltyper.Typer{}, err
+			return Typer{}, err
 		}
 	}
 

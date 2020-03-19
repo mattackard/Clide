@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
-
-	"github.com/mattackard/Clide/pkg/sdltyper"
 )
 
 //Command holds a single clide command
@@ -43,7 +41,7 @@ func (cmd Command) IsInstalled() bool {
 }
 
 //Run runs a cli command with options to wait before and after execution
-func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error) {
+func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
@@ -61,7 +59,7 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 	if cmd.Hidden {
 		err := command.Run()
 		if err != nil {
-			return sdltyper.Typer{}, nil
+			return Typer{}, nil
 		}
 	} else {
 		command.Stderr = os.Stderr
@@ -76,13 +74,13 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 			//set up a stdout pipe to capture the output
 			output, err := command.StdoutPipe()
 			if err != nil {
-				return sdltyper.Typer{}, nil
+				return Typer{}, nil
 			}
 
 			//dont wait for command to finish
 			err = command.Start()
 			if err != nil {
-				return sdltyper.Typer{}, err
+				return Typer{}, err
 			}
 
 			//stream the output from the command in realtime
@@ -92,7 +90,7 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 				for scanner.Scan() {
 					line := scanner.Text()
 					typer.Pos.X = 5
-					typer.Pos, err = sdltyper.Print(typer, line)
+					typer.Pos, err = Print(typer, line)
 				}
 			}()
 
@@ -101,12 +99,12 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 		} else {
 			output, err := command.Output()
 			if err != nil {
-				return sdltyper.Typer{}, err
+				return Typer{}, err
 			}
 			typer.Pos.X = 5
-			typer.Pos, err = sdltyper.Print(typer, string(output))
+			typer.Pos, err = Print(typer, string(output))
 			if err != nil {
-				return sdltyper.Typer{}, err
+				return Typer{}, err
 			}
 		}
 	}
@@ -114,7 +112,7 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 }
 
 // ClearWindow removes all content on the window specified in typer
-func ClearWindow(typer sdltyper.Typer) (sdltyper.Typer, error) {
+func ClearWindow(typer Typer) (Typer, error) {
 	var surface *sdl.Surface
 	var backgroundColor sdl.Color
 	var err error
@@ -136,7 +134,7 @@ func ClearWindow(typer sdltyper.Typer) (sdltyper.Typer, error) {
 
 	//draw the rect and update typer position
 	typer.Window.UpdateSurface()
-	typer.Pos = sdltyper.Position{
+	typer.Pos = Position{
 		X: 5,
 		Y: 5,
 		H: 0,

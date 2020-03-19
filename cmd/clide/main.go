@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/mattackard/Clide/pkg/clide"
-	"github.com/mattackard/Clide/pkg/sdltyper"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -38,7 +37,7 @@ func main() {
 	defer sdl.Quit()
 
 	//open a window for each defined in json
-	window, err := newWindow("Clide", sdltyper.Position{
+	window, err := newWindow("Clide", clide.Position{
 		X: 0,
 		Y: 0,
 		H: 800,
@@ -50,15 +49,15 @@ func main() {
 	defer window.Destroy()
 
 	//initialize typer values
-	typer := sdltyper.Typer{
+	typer := clide.Typer{
 		Window: window,
-		Pos: sdltyper.Position{
+		Pos: clide.Position{
 			X: 5,
 			Y: 5,
 			H: 0,
 			W: 0,
 		},
-		Font: sdltyper.Font{
+		Font: clide.Font{
 			Path: fontPath,
 			Size: fontSize,
 		},
@@ -75,20 +74,20 @@ func main() {
 	//check if os.Args[1] exists
 	if len(os.Args) < 2 {
 		fmt.Println("You must provide a clide configured json file to run a demo.")
-		typer.Pos, err = sdltyper.Print(typer, "You must provide a clide configured json file to run a demo.")
+		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.")
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n" + helpText)
 		typer.Pos.X = 20
 		typer.Pos.Y += 20
-		typer.Pos, err = sdltyper.Print(typer, helpText)
+		typer.Pos, err = clide.Print(typer, helpText)
 		if err != nil {
 			panic(err)
 		}
 		typer.Pos.X = 5
 		typer.Pos.Y += 20
-		typer.Pos, err = sdltyper.Print(typer, "Exiting in 10 seconds")
+		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds")
 		if err != nil {
 			panic(err)
 		}
@@ -105,7 +104,7 @@ func main() {
 	file, err := os.Open(os.Args[1])
 	if err != nil {
 		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide", os.Args[1])
-		typer.Pos, err = sdltyper.Print(typer, errorText)
+		typer.Pos, err = clide.Print(typer, errorText)
 		if err != nil {
 			panic(err)
 		}
@@ -114,7 +113,7 @@ func main() {
 		file, err = os.Open("/usr/share/clide/" + os.Args[1])
 		if err != nil {
 			errorText = fmt.Sprintf("File %s does not exists /usr/share/clide. Checking for clide examples on clide.sh with name %s ...", os.Args[1], os.Args[1])
-			typer.Pos, err = sdltyper.Print(typer, errorText)
+			typer.Pos, err = clide.Print(typer, errorText)
 			if err != nil {
 				panic(err)
 			}
@@ -122,7 +121,7 @@ func main() {
 			//if not finally check clide demo fileserver
 			resp, err = http.Get("https://clide.sh/demos/" + os.Args[1])
 			if err != nil || resp.StatusCode != 200 {
-				typer.Pos, err = sdltyper.Print(typer, "Could not find file at clide.sh/demos")
+				typer.Pos, err = clide.Print(typer, "Could not find file at clide.sh/demos")
 				if err != nil {
 					panic(err)
 				}
@@ -167,7 +166,7 @@ func main() {
 		} else {
 			if !cfg.HideWarnings {
 				warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
-				typer.Pos, err = sdltyper.Print(typer, warning)
+				typer.Pos, err = clide.Print(typer, warning)
 				if err != nil {
 					panic(err)
 				}
@@ -177,7 +176,7 @@ func main() {
 }
 
 // newWindow creates a new sdl2 window
-func newWindow(title string, pos sdltyper.Position) (*sdl.Window, error) {
+func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
 	var window *sdl.Window
 	var err error
 

@@ -1,4 +1,4 @@
-package sdltyper
+package clide
 
 import (
 	"math/rand"
