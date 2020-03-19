@@ -47,7 +47,7 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
-		typer, err = clearTerminal(typer)
+		typer, err = ClearWindow(typer)
 		if err != nil {
 			return typer, err
 		}
@@ -113,7 +113,8 @@ func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error)
 	return typer, nil
 }
 
-func clearTerminal(typer sdltyper.Typer) (sdltyper.Typer, error) {
+// ClearWindow removes all content on the window specified in typer
+func ClearWindow(typer sdltyper.Typer) (sdltyper.Typer, error) {
 	var surface *sdl.Surface
 	var backgroundColor sdl.Color
 	var err error
