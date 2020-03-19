@@ -1,9 +1,11 @@
 package clide
 
 import (
-	"fmt"
-	"math/rand"
+	"os"
 	"time"
+
+	"github.com/mattackard/Clide/pkg/sdltyper"
+	"github.com/veandco/go-sdl2/sdl"
 
 	"github.com/eiannone/keyboard"
 )
@@ -14,21 +16,32 @@ func prompt(cfg Config) string {
 }
 
 //writeCommand prints out the given command and emulates a terminal prompt before it
-func writeCommand(cmd Command, cfg Config, done chan bool) {
+func writeCommand(cmd Command, cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error) {
 
-	fmt.Print(prompt(cfg))
+	//print terminal prompt
+	typer.Pos.X = 5
+	pos, err := sdltyper.Print(typer, prompt(cfg))
+	if err != nil {
+		return sdltyper.Typer{}, err
+	}
 
 	if cmd.WaitForKey {
-		err := keyboard.Open()
-		if err != nil {
-			panic(err)
-		}
-		defer keyboard.Close()
+		pressed := false
+		for !pressed {
+			//keep checking keyboard events until a trigger key is pressed
+			for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+				switch t := event.(type) {
 
-		//keep looping until key from TriggerKeys is pressed
-		for {
-			if keyPressed(cfg.TiggerKeys) {
-				break
+				//if quit event, close program
+				case *sdl.QuitEvent:
+					os.Exit(1)
+				case *sdl.KeyboardEvent:
+					for _, key := range cfg.TiggerKeys {
+						if t.Keysym.Sym == sdl.GetKeyFromName(key) {
+							pressed = true
+						}
+					}
+				}
 			}
 		}
 	} else {
@@ -36,40 +49,30 @@ func writeCommand(cmd Command, cfg Config, done chan bool) {
 		time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
 	}
 
+	//set typer x position after command prompt
+	typer.Pos = sdltyper.Position{
+		X: pos.X,
+		Y: typer.Pos.Y,
+		H: pos.H,
+		W: pos.W,
+	}
+
+	//type of print command to window
 	if cmd.Typed {
-		//print each command character using the typespeed and humanize values
-		for i, v := range cmd.CmdString {
-			time.Sleep(getKeyDelay(cfg))
-			fmt.Print(string(v))
-			if i == len(cmd.CmdString)-1 {
-				//wait before executing the command, but after writing to the terminal
-				time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
-				fmt.Print("\n")
-				done <- true
-			}
+		typer.Pos, err = sdltyper.Type(typer, cmd.CmdString)
+		if err != nil {
+			return sdltyper.Typer{}, err
 		}
 	} else {
-		fmt.Print(cmd.CmdString)
-
-		//wait before executing the command, but after writing to the terminal
-		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
-		fmt.Print("\n")
-		done <- true
+		typer.Pos, err = sdltyper.Print(typer, cmd.CmdString)
+		if err != nil {
+			return sdltyper.Typer{}, err
+		}
 	}
-}
 
-//getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio
-func getKeyDelay(cfg Config) time.Duration {
-	if cfg.Humanize > 0 {
-		//set up a seeded random
-		rand.Seed(time.Now().UnixNano())
-
-		//calculate speed variance based on humanize field
-		variance := (1 - cfg.Humanize - rand.Float64()) * float64(cfg.TypeSpeed)
-
-		return time.Duration(float64(cfg.TypeSpeed)+variance) * time.Millisecond
-	}
-	return time.Duration(cfg.TypeSpeed) * time.Millisecond
+	//wait before executing the command, but after writing to the terminal
+	time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
+	return typer, nil
 }
 
 //keyPressed returns whether or not the key pressed in any []string

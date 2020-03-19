@@ -1,10 +1,15 @@
 package clide
 
 import (
+	"bufio"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
+
+	"github.com/mattackard/Clide/pkg/sdltyper"
 )
 
 //Command holds a single clide command
@@ -38,10 +43,14 @@ func (cmd Command) IsInstalled() bool {
 }
 
 //Run runs a cli command with options to wait before and after execution
-func (cmd Command) Run(cfg Config) error {
+func (cmd Command) Run(cfg Config, typer sdltyper.Typer) (sdltyper.Typer, error) {
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
-		clearTerminal()
+		var err error
+		typer, err = clearTerminal(typer)
+		if err != nil {
+			return typer, err
+		}
 	}
 
 	//parse program from command string
@@ -49,34 +58,91 @@ func (cmd Command) Run(cfg Config) error {
 	program := split[0]
 	command := exec.Command(program, split[1:]...)
 
-	if !cmd.Hidden {
-		command.Stderr = os.Stderr
-		command.Stdout = os.Stdout
-
-		//type the command into the console and wait for it to finish typing before further execution
-		written := make(chan bool, 1)
-		go writeCommand(cmd, cfg, written)
-		<-written
-	}
-
-	if cmd.Timeout != 0 {
-		err := command.Start()
-		if err != nil {
-			return err
-		}
-		time.Sleep(time.Duration(cmd.Timeout) * time.Second)
-		command.Process.Kill()
-	} else {
+	if cmd.Hidden {
 		err := command.Run()
 		if err != nil {
-			return err
+			return sdltyper.Typer{}, nil
+		}
+	} else {
+		command.Stderr = os.Stderr
+
+		//type the command into the console and wait for it to finish typing before further execution
+		var err error
+		typer, err = writeCommand(cmd, cfg, typer)
+		if err != nil {
+			panic(err)
+		}
+		if cmd.Timeout != 0 {
+			//set up a stdout pipe to capture the output
+			output, err := command.StdoutPipe()
+			if err != nil {
+				return sdltyper.Typer{}, nil
+			}
+
+			//dont wait for command to finish
+			err = command.Start()
+			if err != nil {
+				return sdltyper.Typer{}, err
+			}
+
+			//stream the output from the command in realtime
+			//won't block so the sleep timer can run while printing
+			go func() {
+				scanner := bufio.NewScanner(output)
+				for scanner.Scan() {
+					line := scanner.Text()
+					typer.Pos.X = 5
+					typer.Pos, err = sdltyper.Print(typer, line)
+				}
+			}()
+
+			time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+			command.Process.Kill()
+		} else {
+			output, err := command.Output()
+			if err != nil {
+				return sdltyper.Typer{}, err
+			}
+			typer.Pos.X = 5
+			typer.Pos, err = sdltyper.Print(typer, string(output))
+			if err != nil {
+				return sdltyper.Typer{}, err
+			}
 		}
 	}
-	return nil
+	return typer, nil
 }
 
-func clearTerminal() {
-	command := exec.Command("clear")
-	command.Stdout = os.Stdout
-	command.Run()
+func clearTerminal(typer sdltyper.Typer) (sdltyper.Typer, error) {
+	var surface *sdl.Surface
+	var err error
+
+	//get surface info
+	if surface, err = typer.Window.GetSurface(); err != nil {
+		return typer, err
+	}
+
+	//create a rectangle that fills the screen and make it black
+	rect := sdl.Rect{
+		X: 0,
+		Y: 0,
+		W: surface.W,
+		H: surface.H,
+	}
+	surface.FillRect(&rect, 0)
+
+	//draw the rect and update typer position
+	typer.Window.UpdateSurface()
+	typer.Pos = sdltyper.Position{
+		X: 5,
+		Y: 5,
+		H: 0,
+		W: 0,
+	}
+
+	// command := exec.Command("clear")
+	// command.Stdout = os.Stdout
+	// command.Run()
+
+	return typer, nil
 }
