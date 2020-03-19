@@ -15,9 +15,9 @@ Clide uses the [go-sdl2](https://github.com/veandco/go-sdl2) project to create i
 
 The Clide source contains an `examples` folder that contains sample json demos. It is recommended to try out running clide with one of the included demo json files to confirm all dependencies are installed.
 
-**Running a demo from a built binary:**
+**Running a demo using Go:**
 
-`cmd/clide/*.go examples/demo.json`
+`go run cmd/clide/*.go examples/demo.json`
 
 **Running a demo from a built binary:**
 
