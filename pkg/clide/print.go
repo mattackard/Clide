@@ -1,10 +1,7 @@
 package clide
 
 import (
-	"os"
 	"time"
-
-	"github.com/veandco/go-sdl2/sdl"
 
 	"github.com/eiannone/keyboard"
 )
@@ -24,25 +21,8 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 		return Typer{}, err
 	}
 
-	if cmd.WaitForKey {
-		pressed := false
-		for !pressed {
-			//keep checking keyboard events until a trigger key is pressed
-			for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-				switch t := event.(type) {
-
-				//if quit event, close program
-				case *sdl.QuitEvent:
-					os.Exit(1)
-				case *sdl.KeyboardEvent:
-					for _, key := range cfg.TiggerKeys {
-						if t.Keysym.Sym == sdl.GetKeyFromName(key) {
-							pressed = true
-						}
-					}
-				}
-			}
-		}
+	if cmd.WaitForKey || cfg.KeyTriggerAll {
+		ListenForKey(cfg)
 	} else {
 		//wait before writing the command to the terminal
 		time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
@@ -69,8 +49,13 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 		}
 	}
 
-	//wait before executing the command, but after writing to the terminal
-	time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
+	if cmd.WaitForKey || cfg.KeyTriggerAll {
+		ListenForKey(cfg)
+	} else {
+		//wait before executing the command, but after writing to the terminal
+		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
+	}
+
 	return typer, nil
 }
 

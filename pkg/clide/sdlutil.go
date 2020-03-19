@@ -2,6 +2,7 @@ package clide
 
 import (
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -169,6 +170,45 @@ func Print(typer Typer, text string) (Position, error) {
 		W: surface.W,
 		H: surface.H,
 	}, nil
+}
+
+// ListenForKey blocks execution until a key is pressed.
+// Use in a goroutine to watch in the background
+func ListenForKey(cfg Config) {
+	pressed := false
+	for !pressed {
+		//keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch t := event.(type) {
+			case *sdl.KeyboardEvent:
+				for _, key := range cfg.TiggerKeys {
+					if t.Keysym.Sym == sdl.GetKeyFromName(key) {
+						pressed = true
+					}
+				}
+			}
+		}
+	}
+}
+
+// ListenForQuit watches for a quit event on any window and exits clide with status 1 when found
+func ListenForQuit() {
+	for {
+		//keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch target := event.(type) {
+
+			//if quit event, close program
+			case *sdl.QuitEvent:
+				os.Exit(1)
+			//keyboard keys to quit
+			case *sdl.KeyboardEvent:
+				if target.Keysym.Sym == sdl.K_ESCAPE {
+					// os.Exit(1)
+				}
+			}
+		}
+	}
 }
 
 //getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio

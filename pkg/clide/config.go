@@ -17,6 +17,7 @@ type Config struct {
 	Humanize       float64   `json:"humanize"`
 	HideWarnings   bool      `json:"hideWarnings"`
 	ClearBeforeAll bool      `json:"clearBeforeAll"`
+	KeyTriggerAll  bool      `json:"keyTriggerAll"`
 	TiggerKeys     []string  `json:"triggerKeys"`
 	Commands       []Command `json:"commands"`
 }

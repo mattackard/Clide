@@ -48,6 +48,9 @@ func main() {
 	}
 	defer window.Destroy()
 
+	//listen for quit events to close program
+	go clide.ListenForQuit()
+
 	//initialize typer values
 	typer := clide.Typer{
 		Window: window,
