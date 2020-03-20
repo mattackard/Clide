@@ -2,9 +2,9 @@ package clide
 
 import (
 	"bufio"
-	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -21,7 +21,10 @@ type Command struct {
 	Hidden         bool   `json:"hidden"`
 	WaitForKey     bool   `json:"waitForKey"`
 	ClearBeforeRun bool   `json:"clearBeforeRun"`
+	Async          bool   `json:"async"`
 }
+
+const defaultTimeout = 10
 
 //Validate checks for potential issues in a Command
 func (cmd Command) Validate() {
@@ -61,51 +64,109 @@ func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
 		if err != nil {
 			return Typer{}, nil
 		}
-	} else {
-		command.Stderr = os.Stderr
+	} else if cmd.Async {
+		go func() {
+			//make sure process is not left running
+			defer command.Process.Signal(syscall.SIGINT)
 
+			//type the command into the console and wait for it to finish typing before further execution
+			var err error
+			typer, err = writeCommand(cmd, cfg, typer)
+			if err != nil {
+				panic(err)
+			}
+
+			//set up a stdout and stderr pipe to capture the output
+			output, err := command.StdoutPipe()
+			if err != nil {
+				panic(err)
+			}
+			errOutput, err := command.StderrPipe()
+			if err != nil {
+				panic(err)
+			}
+
+			//dont wait for command to finish
+			err = command.Start()
+			if err != nil {
+				panic(err)
+			}
+
+			//stream the output from the command in realtime
+			//won't block so the sleep timer can run while printing
+			go func() {
+				outputScanner := bufio.NewScanner(output)
+				for outputScanner.Scan() {
+					line := outputScanner.Text()
+					typer.Pos.X = 5
+					typer.Pos, err = Print(typer, line)
+				}
+			}()
+			go func() {
+				errScanner := bufio.NewScanner(errOutput)
+				for errScanner.Scan() {
+					line := errScanner.Text()
+					typer.Pos.X = 5
+					typer.Pos, err = Print(typer, line)
+				}
+			}()
+
+			//set default timeout if not set
+			if cmd.Timeout == 0 {
+				cmd.Timeout = defaultTimeout
+			}
+
+			time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+		}()
+	} else if cmd.Timeout != 0 {
 		//type the command into the console and wait for it to finish typing before further execution
 		var err error
 		typer, err = writeCommand(cmd, cfg, typer)
 		if err != nil {
 			panic(err)
 		}
-		if cmd.Timeout != 0 {
-			//set up a stdout pipe to capture the output
-			output, err := command.StdoutPipe()
-			if err != nil {
-				return Typer{}, nil
-			}
 
-			//dont wait for command to finish
-			err = command.Start()
-			if err != nil {
-				return Typer{}, err
-			}
+		//set up a stdout pipe to capture the output
+		output, err := command.StdoutPipe()
+		if err != nil {
+			return Typer{}, nil
+		}
 
-			//stream the output from the command in realtime
-			//won't block so the sleep timer can run while printing
-			go func() {
-				scanner := bufio.NewScanner(output)
-				for scanner.Scan() {
-					line := scanner.Text()
-					typer.Pos.X = 5
-					typer.Pos, err = Print(typer, line)
-				}
-			}()
+		//dont wait for command to finish
+		err = command.Start()
+		if err != nil {
+			return Typer{}, err
+		}
 
-			time.Sleep(time.Duration(cmd.Timeout) * time.Second)
-			command.Process.Kill()
-		} else {
-			output, err := command.Output()
-			if err != nil {
-				return Typer{}, err
+		//stream the output from the command in realtime
+		//won't block so the sleep timer can run while printing
+		go func() {
+			scanner := bufio.NewScanner(output)
+			for scanner.Scan() {
+				line := scanner.Text()
+				typer.Pos.X = 5
+				typer.Pos, err = Print(typer, line)
 			}
-			typer.Pos.X = 5
-			typer.Pos, err = Print(typer, string(output))
-			if err != nil {
-				return Typer{}, err
-			}
+		}()
+
+		time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+		command.Process.Kill()
+	} else {
+		//type the command into the console and wait for it to finish typing before further execution
+		var err error
+		typer, err = writeCommand(cmd, cfg, typer)
+		if err != nil {
+			panic(err)
+		}
+
+		output, err := command.Output()
+		if err != nil {
+			return Typer{}, err
+		}
+		typer.Pos.X = 5
+		typer.Pos, err = Print(typer, string(output))
+		if err != nil {
+			return Typer{}, err
 		}
 	}
 	return typer, nil
