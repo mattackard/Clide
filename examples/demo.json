@@ -8,23 +8,14 @@
     "keyTriggerAll": false,
     "windows": [
         {
-            "name": "Clide1",
+            "name": "Clide",
             "x": 0,
             "y": 0,
-            "height": 1000,
-            "width": 900
-        },
-        {
-            "name": "Clide2",
-            "x": 900,
-            "y": 0,
-            "height": 1000,
-            "width": 900
+            "height": 800,
+            "width": 1200
         }
     ],
     "triggerKeys": [
-        "/",
-        "z",
         "Space",
         "Right"
     ],
@@ -39,27 +30,23 @@
         {
             "cmd": "echo Clide can automate shell commands using timings! I'll wait a few seconds before the next command. . .",
             "typed": true,
-            "window": "Clide2",
             "predelay": 500,
             "postdelay": 1000
         },
         {
             "cmd": "echo Clide can also trigger on key press. The next command won't run until you press 'space', or 'right arrow'.",
             "typed": true,
-            "window": "Clide1",
-            "predelay": 5000
+            "predelay": 3000
         },
         {
             "cmd": "whoami",
             "waitForKey": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "echo Clide can also set a timeout for commands that run forever",
             "typed": true,
-            "window": "Clide1",
             "predelay": 500,
             "postdelay": 1000
         },
@@ -67,7 +54,6 @@
             "cmd": "ping google.com",
             "typed": true,
             "clearBeforeRun": true,
-            "window": "Clide1",
             "predelay": 500,
             "postdelay": 1200,
             "timeout": 5
@@ -76,40 +62,34 @@
             "cmd": "echo You can also run hidden commands that will run in the background!",
             "typed": true,
             "clearBeforeRun": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "echo Creating newFile.txt in the background",
             "typed": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "touch newFile.txt",
-            "hidden": true,
-            "window": "Clide1"
+            "hidden": true
         },
         {
             "cmd": "ls",
             "typed": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "echo You can see newFile.txt was created! Now we can get rid of it.",
             "typed": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "rm newFile.txt",
             "typed": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
@@ -117,20 +97,17 @@
             "cmd": "echo Check out the json files in the projects '/examples' directory to see more demos and to look at example json configurations.",
             "typed": true,
             "clearBeforeRun": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "echo Thanks for checking out Clide, hopefully it will simplify your next CLI demo.",
             "typed": true,
-            "window": "Clide1",
             "predelay": 1000,
             "postdelay": 1000
         },
         {
             "cmd": "clear",
-            "window": "Clide1",
             "predelay": 3000
         }
     ]

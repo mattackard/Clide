@@ -1,0 +1,84 @@
+{
+    "user": "network-demo@clide",
+    "directory": "/",
+    "typespeed": 200,
+    "humanize": 0.9,
+    "hideWarnings": false,
+    "clearBeforeAll": false,
+    "keyTriggerAll": false,
+    "windows": [
+        {
+            "name": "Client",
+            "x": 0,
+            "y": 0,
+            "height": 1080,
+            "width": 960
+        },
+        {
+            "name": "Server1",
+            "x": 960,
+            "y": 0,
+            "height": 520,
+            "width": 960
+        },
+        {
+            "name": "Server2",
+            "x": 960,
+            "y": 540,
+            "height": 520,
+            "width": 960
+        }
+    ],
+    "triggerKeys": [
+        "Space",
+        "Right"
+    ],
+    "commands": [
+        {
+            "cmd": "netcat -lkv 1234",
+            "window": "Server1",
+            "typed": true,
+            "async": true,
+            "timeout": 60,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "netcat -lkv 2345",
+            "window": "Server2",
+            "typed": true,
+            "async": true,
+            "timeout": 60,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "curl localhost:1234",
+            "typed": true,
+            "window": "Client",
+            "timeout": 1,
+            "predelay": 3000
+        },
+        {
+            "cmd": "curl localhost:2345",
+            "typed": true,
+            "window": "Client",
+            "timeout": 1,
+            "predelay": 500
+        },
+        {
+            "cmd": "curl localhost:1234",
+            "typed": true,
+            "window": "Client",
+            "timeout": 1,
+            "predelay": 500
+        },
+        {
+            "cmd": "curl localhost:2345",
+            "typed": true,
+            "window": "Client",
+            "timeout": 1,
+            "predelay": 500
+        }
+    ]
+}

@@ -1,0 +1,73 @@
+{
+    "user": "window-demo@clide",
+    "directory": "/",
+    "typespeed": 100,
+    "humanize": 0.9,
+    "hideWarnings": false,
+    "clearBeforeAll": false,
+    "keyTriggerAll": false,
+    "windows": [
+        {
+            "name": "Window1",
+            "x": 0,
+            "y": 0,
+            "height": 500,
+            "width": 960
+        },
+        {
+            "name": "Window2",
+            "x": 960,
+            "y": 0,
+            "height": 500,
+            "width": 960
+        },
+        {
+            "name": "Window3",
+            "x": 0,
+            "y": 540,
+            "height": 500,
+            "width": 960
+        },
+        {
+            "name": "Window4",
+            "x": 960,
+            "y": 540,
+            "height": 500,
+            "width": 960
+        }
+    ],
+    "triggerKeys": [
+        "Space",
+        "Right"
+    ],
+    "commands": [
+        {
+            "cmd": "echo Typing into window1",
+            "window": "Window1",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Typing into window2",
+            "window": "Window2",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Typing into window3",
+            "window": "Window3",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Typing into window4",
+            "window": "Window4",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500
+        }
+    ]
+}
