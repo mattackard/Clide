@@ -6,10 +6,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/veandco/go-sdl2/sdl"
+
 	"github.com/gookit/color"
 )
 
-//Config holds the global configuration for a clide demo
+// Config holds the global configuration for a clide demo
 type Config struct {
 	User           string    `json:"user"`
 	Directory      string    `json:"directory"`
@@ -18,8 +20,19 @@ type Config struct {
 	HideWarnings   bool      `json:"hideWarnings"`
 	ClearBeforeAll bool      `json:"clearBeforeAll"`
 	KeyTriggerAll  bool      `json:"keyTriggerAll"`
+	Windows        []Window  `json:"windows"`
 	TiggerKeys     []string  `json:"triggerKeys"`
 	Commands       []Command `json:"commands"`
+}
+
+// Window holds data for a window created in sdl
+type Window struct {
+	Window *sdl.Window
+	Name   string `json:"name"`
+	X      int32  `json:"x"`
+	Y      int32  `json:"y"`
+	Height int32  `json:"height"`
+	Width  int32  `json:"width"`
 }
 
 //Validate checks for potential issues in a Config and

@@ -8,7 +8,7 @@ import (
 
 //prompt returns a string used to emulate a terminal prompt
 func prompt(cfg Config) string {
-	return cfg.User + ":" + cfg.Directory + "> "
+	return cfg.User + ":" + cfg.Directory + "$ "
 }
 
 //writeCommand prints out the given command and emulates a terminal prompt before it

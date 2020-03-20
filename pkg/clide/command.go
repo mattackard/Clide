@@ -14,7 +14,7 @@ import (
 type Command struct {
 	CmdString      string `json:"cmd"`
 	Typed          bool   `json:"typed"`
-	Window         int    `json:"window"`
+	Window         string `json:"window"`
 	PreDelay       int    `json:"predelay"`
 	PostDelay      int    `json:"postdelay"`
 	Timeout        int    `json:"timeout"`

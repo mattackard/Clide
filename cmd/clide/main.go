@@ -36,46 +36,37 @@ func main() {
 	}
 	defer sdl.Quit()
 
-	//open a window for each defined in json
-	window, err := newWindow("Clide", clide.Position{
-		X: 0,
-		Y: 0,
-		H: 800,
-		W: 1000,
-	})
-	if err != nil {
-		panic(err)
-	}
-	defer window.Destroy()
-
-	//listen for quit events to close program
-	go clide.ListenForQuit()
-
-	//initialize typer values
-	typer := clide.Typer{
-		Window: window,
-		Pos: clide.Position{
-			X: 5,
-			Y: 5,
-			H: 0,
-			W: 0,
-		},
-		Font: clide.Font{
-			Path: fontPath,
-			Size: fontSize,
-		},
-		Speed:    100,
-		Humanize: 0.9,
-	}
-
-	//reset window background color
-	typer, err = clide.ClearWindow(typer)
-	if err != nil {
-		panic(err)
-	}
-
 	//check if os.Args[1] exists
 	if len(os.Args) < 2 {
+		//open a window for error message
+		window, err := newWindow("Clide", clide.Position{
+			X: 0,
+			Y: 0,
+			H: 800,
+			W: 1000,
+		})
+		if err != nil {
+			panic(err)
+		}
+		defer window.Destroy()
+
+		//initialize typer values
+		typer := clide.Typer{
+			Window: window,
+			Pos: clide.Position{
+				X: 5,
+				Y: 5,
+				H: 0,
+				W: 0,
+			},
+			Font: clide.Font{
+				Path: fontPath,
+				Size: fontSize,
+			},
+			Speed:    100,
+			Humanize: 0.9,
+		}
+
 		fmt.Println("You must provide a clide configured json file to run a demo.")
 		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.")
 		if err != nil {
@@ -106,6 +97,35 @@ func main() {
 	var resp *http.Response
 	file, err := os.Open(os.Args[1])
 	if err != nil {
+		//open a window for error message
+		window, err := newWindow("Clide", clide.Position{
+			X: 0,
+			Y: 0,
+			H: 800,
+			W: 1000,
+		})
+		if err != nil {
+			panic(err)
+		}
+		defer window.Destroy()
+
+		//initialize typer values
+		typer := clide.Typer{
+			Window: window,
+			Pos: clide.Position{
+				X: 5,
+				Y: 5,
+				H: 0,
+				W: 0,
+			},
+			Font: clide.Font{
+				Path: fontPath,
+				Size: fontSize,
+			},
+			Speed:    100,
+			Humanize: 0.9,
+		}
+
 		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide", os.Args[1])
 		typer.Pos, err = clide.Print(typer, errorText)
 		if err != nil {
@@ -154,22 +174,72 @@ func main() {
 
 	cfg.Validate()
 
-	//adjust typer values to match cfg
-	typer.Speed = cfg.TypeSpeed
-	typer.Humanize = cfg.Humanize
+	//open a window for each defined in json
+	typerList := []clide.Typer{}
+	for _, w := range cfg.Windows {
+		window, err := newWindow(w.Name, clide.Position{
+			X: w.X,
+			Y: w.Y,
+			H: w.Height,
+			W: w.Width,
+		})
+		if err != nil {
+			panic(err)
+		}
+		defer window.Destroy()
+
+		//initialize typer values
+		typer := clide.Typer{
+			Window: window,
+			Pos: clide.Position{
+				X: 5,
+				Y: 5,
+				H: 0,
+				W: 0,
+			},
+			Font: clide.Font{
+				Path: fontPath,
+				Size: fontSize,
+			},
+			Speed:    cfg.TypeSpeed,
+			Humanize: cfg.Humanize,
+		}
+
+		//reset window background color
+		typer, err = clide.ClearWindow(typer)
+		if err != nil {
+			panic(err)
+		}
+
+		typerList = append(typerList, typer)
+	}
+
+	//listen for quit events to close program
+	go clide.ListenForQuit()
 
 	//run each command in the commands slice
 	for _, cmd := range cfg.Commands {
 		cmd.Validate()
+
+		//find the typer for the window specified in cmd
+		index := 0
+		if cmd.Window != "" {
+			for i, v := range typerList {
+				if v.Window.GetTitle() == cmd.Window {
+					index = i
+				}
+			}
+		}
+
 		if cmd.IsInstalled() {
-			typer, err = cmd.Run(cfg, typer)
+			typerList[index], err = cmd.Run(cfg, typerList[index])
 			if err != nil {
 				panic(err)
 			}
 		} else {
 			if !cfg.HideWarnings {
 				warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
-				typer.Pos, err = clide.Print(typer, warning)
+				typerList[index].Pos, err = clide.Print(typerList[index], warning)
 				if err != nil {
 					panic(err)
 				}

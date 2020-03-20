@@ -1,6 +1,7 @@
 package clide
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strings"
@@ -200,11 +201,12 @@ func ListenForQuit() {
 
 			//if quit event, close program
 			case *sdl.QuitEvent:
+				fmt.Println("Quit event")
 				os.Exit(1)
 			//keyboard keys to quit
 			case *sdl.KeyboardEvent:
 				if target.Keysym.Sym == sdl.K_ESCAPE {
-					// os.Exit(1)
+					os.Exit(1)
 				}
 			}
 		}
