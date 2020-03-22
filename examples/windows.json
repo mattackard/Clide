@@ -42,32 +42,63 @@
     ],
     "commands": [
         {
-            "cmd": "echo Typing into window1",
+            "cmd": "echo Typing into window 1",
             "window": "Window1",
             "typed": true,
             "predelay": 500,
             "postdelay": 500
         },
         {
-            "cmd": "echo Typing into window2",
+            "cmd": "echo Typing into window 2",
             "window": "Window2",
             "typed": true,
             "predelay": 500,
             "postdelay": 500
         },
         {
-            "cmd": "echo Typing into window3",
+            "cmd": "echo Typing into window 3",
             "window": "Window3",
             "typed": true,
             "predelay": 500,
             "postdelay": 500
         },
         {
-            "cmd": "echo Typing into window4",
+            "cmd": "echo Typing into window 4",
             "window": "Window4",
             "typed": true,
             "predelay": 500,
             "postdelay": 500
+        },
+        {
+            "cmd": "echo Async typing into window 1",
+            "window": "Window1",
+            "typed": true,
+            "async": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Async typing into window 2",
+            "window": "Window2",
+            "typed": true,
+            "async": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Async typing into window 3",
+            "window": "Window3",
+            "typed": true,
+            "async": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Async typing into window 4",
+            "window": "Window4",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 5000
         }
     ]
 }
