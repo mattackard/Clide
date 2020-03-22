@@ -1,14 +1,9 @@
 package clide
 
 import (
-	"bufio"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/veandco/go-sdl2/sdl"
-
-	"github.com/gookit/color"
 )
 
 // Config holds the global configuration for a clide demo
@@ -38,9 +33,35 @@ type Window struct {
 //Validate checks for potential issues in a Config and
 //adds some default values if they are not present
 func (cfg Config) Validate() {
+	var window *sdl.Window
+	var err error
+
+	// Create a window for us to draw the text on
+	if window, err = sdl.CreateWindow("Clide", 0, 0, 600, 600, sdl.WINDOW_SHOWN); err != nil {
+		panic(err)
+	}
+	defer window.Destroy()
+
+	//initialize typer values
+	typer := Typer{
+		Window: window,
+		Pos: Position{
+			X: 5,
+			Y: 5,
+			H: 0,
+			W: 0,
+		},
+		Font: Font{
+			Path: "assets/UbuntuMono-B.ttf",
+			Size: 18,
+		},
+		Speed:    cfg.TypeSpeed,
+		Humanize: cfg.Humanize,
+	}
+
 	//throw error when no commands are present
 	if len(cfg.Commands) == 0 {
-		panic("No commands found in provided json file")
+		Print(typer, "No commands found in provided json file")
 	}
 
 	//default directory
@@ -68,21 +89,9 @@ func (cfg Config) Validate() {
 
 		//comfirm user wants to run program even though uninstalled commands will be skipped
 		if len(notInstalled) != 0 {
-			color.Println("<comment>WARNING</>: At least one command is not installed on the system! The following commands will be skipped:")
+			Print(typer, "WARNING: At least one command is not installed on the system! The following commands will be skipped:")
 			for _, badCmd := range notInstalled {
-				split := strings.Split(badCmd, " ")
-				joined := strings.Join(split[1:], " ")
-				color.Printf("\t<green>%s</> %s \n", split[0], joined)
-			}
-			fmt.Print("Would you still like to run the demo? [y/n]: ")
-
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			answer := scanner.Text()
-			fmt.Scan(answer)
-			if !strings.HasPrefix(answer, "y") && !strings.HasPrefix(answer, "Y") {
-				fmt.Println("Exiting program")
-				os.Exit(1)
+				Print(typer, badCmd)
 			}
 		}
 	}
