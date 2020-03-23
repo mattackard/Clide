@@ -282,13 +282,17 @@ func listenForQuit(exitChan chan bool) {
 
 			//if quit event, close program
 			case *sdl.QuitEvent:
-				fmt.Println("Quit event")
 				exit(1, exitChan)
-			//keyboard keys to quit
-			case *sdl.KeyboardEvent:
-				if target.Keysym.Sym == sdl.K_ESCAPE {
+			//if any window is closed, close program
+			case *sdl.WindowEvent:
+				if target.Event == sdl.WINDOWEVENT_CLOSE {
 					exit(1, exitChan)
 				}
+				//keyboard keys to quit
+				// case *sdl.KeyboardEvent:
+				// 	if target.Keysym.Sym == sdl.K_ESCAPE {
+				// 		exit(1, exitChan)
+				// 	}
 			}
 		}
 	}
