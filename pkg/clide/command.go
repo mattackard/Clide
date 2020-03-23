@@ -2,6 +2,7 @@ package clide
 
 import (
 	"bufio"
+	"errors"
 	"os/exec"
 	"strings"
 	"time"
@@ -26,11 +27,13 @@ type Command struct {
 const defaultTimeout = 10
 
 //Validate checks for potential issues in a Command
-func (cmd Command) Validate() {
+func (cmd Command) Validate() error {
 	//throw an error when no command string is present
 	if cmd.CmdString == "" {
-		panic("No command string present in command")
+		err := errors.New("No command string present in command")
+		return err
 	}
+	return nil
 }
 
 //IsInstalled checks to see if the command is installed on the system

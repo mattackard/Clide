@@ -79,7 +79,7 @@ func Type(typer Typer, text string) (Position, error) {
 
 		// Wrap text if it's too long
 		if lastX > surface.W-15 || []byte(char)[0] == []byte("\n")[0] {
-			lastX = typer.Pos.X
+			lastX = 5
 			lastY += textsurface.H + 2
 		}
 

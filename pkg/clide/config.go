@@ -1,6 +1,7 @@
 package clide
 
 import (
+	"errors"
 	"os"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -32,13 +33,13 @@ type Window struct {
 
 //Validate checks for potential issues in a Config and
 //adds some default values if they are not present
-func (cfg Config) Validate() {
+func (cfg Config) Validate() (Config, error) {
 	var window *sdl.Window
 	var err error
 
 	// Create a window for us to draw the text on
 	if window, err = sdl.CreateWindow("Clide", 0, 0, 600, 600, sdl.WINDOW_SHOWN); err != nil {
-		panic(err)
+		return Config{}, err
 	}
 	defer window.Destroy()
 
@@ -46,7 +47,7 @@ func (cfg Config) Validate() {
 	typer := Typer{
 		Window: window,
 		Pos: Position{
-			X: 5,
+			X: 50,
 			Y: 5,
 			H: 0,
 			W: 0,
@@ -59,9 +60,21 @@ func (cfg Config) Validate() {
 		Humanize: cfg.Humanize,
 	}
 
+	//if no windows were provided in json, create one
+	if len(cfg.Windows) == 0 {
+		cfg.Windows = []Window{Window{
+			Name:   "Clide",
+			X:      0,
+			Y:      0,
+			Height: 600,
+			Width:  1000,
+		}}
+	}
+
 	//throw error when no commands are present
 	if len(cfg.Commands) == 0 {
 		Print(typer, "No commands found in provided json file")
+		return cfg, errors.New("No commands found in provided json file")
 	}
 
 	//default directory
@@ -69,7 +82,7 @@ func (cfg Config) Validate() {
 		var err error
 		cfg.Directory, err = os.Getwd()
 		if err != nil {
-			panic(err)
+			return cfg, err
 		}
 	}
 
@@ -95,4 +108,5 @@ func (cfg Config) Validate() {
 			}
 		}
 	}
+	return cfg, nil
 }

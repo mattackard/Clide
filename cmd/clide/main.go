@@ -178,7 +178,10 @@ func main() {
 		panic(err)
 	}
 
-	cfg.Validate()
+	cfg, err = cfg.Validate()
+	if err != nil {
+		panic(err)
+	}
 
 	//open a window for each defined in json
 	typerList := []clide.Typer{}
@@ -225,8 +228,6 @@ func main() {
 
 	//run each command in the commands slice
 	for _, cmd := range cfg.Commands {
-		cmd.Validate()
-
 		//add async commands to goroutine count
 		if cmd.Async {
 			goroutineCount++
@@ -240,6 +241,11 @@ func main() {
 					index = i
 				}
 			}
+		}
+
+		err := cmd.Validate()
+		if err != nil {
+			clide.Print(typerList[index], err.Error())
 		}
 
 		if cmd.IsInstalled() {
