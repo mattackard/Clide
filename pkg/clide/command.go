@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -44,7 +43,7 @@ func (cmd Command) IsInstalled() bool {
 }
 
 //Run runs a cli command with options to wait before and after execution
-func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
+func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, error) {
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
@@ -66,9 +65,6 @@ func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
 		}
 	} else if cmd.Async {
 		go func() {
-			//make sure process is not left running
-			defer command.Process.Signal(syscall.SIGINT)
-
 			//type the command into the console and wait for it to finish typing before further execution
 			var err error
 			typer, err = writeCommand(cmd, cfg, typer)
@@ -91,6 +87,16 @@ func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
 			if err != nil {
 				panic(err)
 			}
+
+			//make sure process is not left running
+			go func() {
+				for {
+					select {
+					case <-exitChan:
+						command.Process.Kill()
+					}
+				}
+			}()
 
 			//stream the output from the command in realtime
 			//won't block so the sleep timer can run while printing
@@ -117,6 +123,7 @@ func (cmd Command) Run(cfg Config, typer Typer) (Typer, error) {
 			}
 
 			time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+			command.Process.Kill()
 		}()
 	} else if cmd.Timeout != 0 {
 		//type the command into the console and wait for it to finish typing before further execution

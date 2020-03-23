@@ -15,14 +15,17 @@ import (
 )
 
 const (
-	fontPath = "assets/UbuntuMono-B.ttf"
-	fontSize = 18
-	helpText = `Clide CLI Usage:
+	goroutineMax = 100
+	fontPath     = "assets/UbuntuMono-B.ttf"
+	fontSize     = 18
+	helpText     = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
 		clide-sh script.sh		converts script.sh into script.json formatted as a clide demo
 		clide-build			opens the clide demo builder interface				
 		clide				shows this help message`
 )
+
+var goroutineCount int
 
 func main() {
 	//initialize sdl2
@@ -35,6 +38,9 @@ func main() {
 		panic(err)
 	}
 	defer sdl.Quit()
+
+	//create a channel to exit out of goroutines when program exits
+	exitChan := make(chan bool, goroutineMax)
 
 	//check if os.Args[1] exists
 	if len(os.Args) < 2 {
@@ -85,7 +91,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		exit(10)
+		exit(10, exitChan)
 	}
 
 	//support missing file extension
@@ -148,7 +154,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				exit(10)
+				exit(10, exitChan)
 			}
 		}
 	}
@@ -215,11 +221,16 @@ func main() {
 	}
 
 	//listen for quit events to close program
-	go clide.ListenForQuit()
+	go listenForQuit(exitChan)
 
 	//run each command in the commands slice
 	for _, cmd := range cfg.Commands {
 		cmd.Validate()
+
+		//add async commands to goroutine count
+		if cmd.Async {
+			goroutineCount++
+		}
 
 		//find the typer for the window specified in cmd
 		index := 0
@@ -232,7 +243,7 @@ func main() {
 		}
 
 		if cmd.IsInstalled() {
-			typerList[index], err = cmd.Run(cfg, typerList[index])
+			typerList[index], err = cmd.Run(cfg, typerList[index], exitChan)
 			if err != nil {
 				panic(err)
 			}
@@ -246,6 +257,7 @@ func main() {
 			}
 		}
 	}
+	exit(1, exitChan)
 }
 
 // newWindow creates a new sdl2 window
@@ -261,8 +273,37 @@ func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
 	return window, nil
 }
 
+// listenForQuit watches for a quit event on any window and exits clide with status 1 when found
+func listenForQuit(exitChan chan bool) {
+	for {
+		//keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch target := event.(type) {
+
+			//if quit event, close program
+			case *sdl.QuitEvent:
+				fmt.Println("Quit event")
+				exit(1, exitChan)
+			//keyboard keys to quit
+			case *sdl.KeyboardEvent:
+				if target.Keysym.Sym == sdl.K_ESCAPE {
+					exit(1, exitChan)
+				}
+			}
+		}
+	}
+}
+
 // exit stops the program after delaying for x seconds
-func exit(delay int) {
+func exit(delay int, exit chan bool) {
+	//send exit signal to all async commands
+	for goroutineCount > 0 {
+		exit <- true
+		goroutineCount--
+	}
+
+	//used to give time for goroutines to exit
 	time.Sleep(time.Second * time.Duration(delay))
+
 	os.Exit(1)
 }

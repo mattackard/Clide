@@ -1,9 +1,7 @@
 package clide
 
 import (
-	"fmt"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
@@ -186,27 +184,6 @@ func ListenForKey(cfg Config) {
 					if t.Keysym.Sym == sdl.GetKeyFromName(key) {
 						pressed = true
 					}
-				}
-			}
-		}
-	}
-}
-
-// ListenForQuit watches for a quit event on any window and exits clide with status 1 when found
-func ListenForQuit() {
-	for {
-		//keep checking keyboard events until a trigger key is pressed
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch target := event.(type) {
-
-			//if quit event, close program
-			case *sdl.QuitEvent:
-				fmt.Println("Quit event")
-				os.Exit(1)
-			//keyboard keys to quit
-			case *sdl.KeyboardEvent:
-				if target.Keysym.Sym == sdl.K_ESCAPE {
-					os.Exit(1)
 				}
 			}
 		}
