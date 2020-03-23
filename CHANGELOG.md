@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for a bunch more JSON configuration fields:
     - hideWarnings - ignore warnings about uninstalled commands
     - clearBeforeAll - clears terminal before every command
-    - ketTriggerAll - waits for a keypress to trigger all timings
+    - keyTriggerAll - waits for a keypress to trigger all timings
     - windows - specifies window title, size, and position
     - triggerKeys - specifies the keys used to trigger command execution
     - window - specifies which window to run the given command in
