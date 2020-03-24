@@ -3,24 +3,9 @@ package clide
 import (
 	"os"
 	"testing"
-
-	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 func TestMain(m *testing.M) {
-	//set up env
-	//initialize sdl2
-	if err := ttf.Init(); err != nil {
-		panic(err)
-	}
-	defer ttf.Quit()
-
-	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
-		panic(err)
-	}
-	defer sdl.Quit()
-
 	exitCode := m.Run()
 
 	//tear down env
@@ -62,32 +47,4 @@ func TestValidate(t *testing.T) {
 	if err != nil {
 		t.Error("Error thrown for valid CmdString")
 	}
-
-	testCfg := Config{
-		Commands: []Command{
-			testCmd,
-		},
-	}
-
-	newCfg, err := testCfg.Validate()
-	if err != nil {
-		t.Errorf("Validate config failed with valid config: %s", err.Error())
-	}
-
-	//test for default user
-	if newCfg.User == "" {
-		t.Errorf("Default config user not applied")
-	}
-
-	//check for default directory
-	currentDir, _ := os.Getwd()
-	if newCfg.Directory != currentDir {
-		t.Errorf("Default config directory not applied. Expected %s to equal %s", newCfg.Directory, currentDir)
-	}
-
-	//check for default window
-	if len(newCfg.Windows) == 0 {
-		t.Error("Default config window not applied")
-	}
-
 }
