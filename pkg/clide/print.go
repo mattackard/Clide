@@ -2,8 +2,6 @@ package clide
 
 import (
 	"time"
-
-	"github.com/eiannone/keyboard"
 )
 
 //prompt returns a string used to emulate a terminal prompt
@@ -57,24 +55,4 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 	}
 
 	return typer, nil
-}
-
-//keyPressed returns whether or not the key pressed in any []string
-func keyPressed(keys []string) bool {
-	char, _, err := keyboard.GetKey()
-	if err != nil {
-		panic(err)
-	}
-	for _, key := range keys {
-		//convert key(string) into rune slice
-		runes := []rune(key)
-
-		//check all runes in slice against keyboard char
-		for _, r := range runes {
-			if r == char {
-				return true
-			}
-		}
-	}
-	return false
 }
