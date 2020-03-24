@@ -3,10 +3,23 @@ package clide
 import (
 	"os"
 	"testing"
+
+	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 )
 
 func TestMain(m *testing.M) {
 	//set up env
+	//initialize sdl2
+	if err := ttf.Init(); err != nil {
+		panic(err)
+	}
+	defer ttf.Quit()
+
+	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
+		panic(err)
+	}
+	defer sdl.Quit()
 
 	exitCode := m.Run()
 
