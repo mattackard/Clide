@@ -280,6 +280,12 @@ func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
 		return nil, err
 	}
 
+	iconSurface, err := sdl.LoadBMP("./assets/clide_icon.bmp")
+	if err != nil {
+		return nil, err
+	}
+	window.SetIcon(iconSurface)
+
 	return window, nil
 }
 
