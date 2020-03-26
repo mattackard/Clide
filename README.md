@@ -15,7 +15,7 @@ An alternative to using the binary is to clone the github project and run clide 
 
 The github release file is a debian package that can be installed with the built-in software manager available in debian operating systems. To install the .deb file from within the terminal run:
 
-`sudo dpkg -i clide.deb`
+`sudo dpkg -i clide_1.1.0.deb`
 
 **Running a demo from a built binary:**
 
