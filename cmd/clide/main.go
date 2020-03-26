@@ -21,8 +21,7 @@ const (
 	fontSize     = 18
 	helpText     = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
-		clide-sh script.sh		converts script.sh into script.json formatted as a clide demo
-		clide-build			opens the clide demo builder interface				
+		clide-editor			opens the clide demo editor GUI interface				
 		clide				shows this help message`
 )
 
