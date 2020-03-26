@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2020-03-26
+
+### Added
+
+- Released as .deb package to auto-install dependencies
+- Support for custom colors for text, background, and terminal prompt
+- More error handling associated with defaults/missing json fields
+- Icon added for clide terminal windows
+- JSON documentation hosted on github-pages
+- Clide website hosted on github-pages
+- Clide package testing and integration with github actions
+
 ## [1.0.0] - 2020-03-22
 
 ### Added
@@ -56,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue templates for bugs and features
 - Preliminary README.md 
 
+[1.1.0]: https://github.com/mattackard/clide/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mattackard/clide/compare/v0.0.2...v1.0.0
 [0.0.2]: https://github.com/mattackard/clide/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/mattackard/clide/releases/tag/v0.0.1
