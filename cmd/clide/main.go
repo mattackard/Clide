@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -16,7 +17,7 @@ import (
 
 const (
 	goroutineMax = 100
-	fontPath     = "assets/UbuntuMono-B.ttf"
+	fontPath     = "/usr/share/clide/assets/UbuntuMono-B.ttf"
 	fontSize     = 18
 	helpText     = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
@@ -74,20 +75,20 @@ func main() {
 		}
 
 		fmt.Println("You must provide a clide configured json file to run a demo.")
-		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n" + helpText)
 		typer.Pos.X = 20
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, helpText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+		typer.Pos, err = clide.Print(typer, helpText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		typer.Pos.X = 5
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
@@ -113,7 +114,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		defer window.Destroy()
 
 		//initialize typer values
 		typer := clide.Typer{
@@ -132,31 +132,39 @@ func main() {
 			Humanize: 0.9,
 		}
 
-		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide", os.Args[1])
-		typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide/examples/", os.Args[1])
+		log.Println(errorText)
+		typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
 
 		//if not check usr/share/clide
-		file, err = os.Open("/usr/share/clide/" + os.Args[1])
+		file, err = os.Open("/usr/share/clide/examples/" + os.Args[1])
 		if err != nil {
-			errorText = fmt.Sprintf("File %s does not exists /usr/share/clide. Checking for clide examples on clide.sh with name %s ...", os.Args[1], os.Args[1])
-			typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			errorText = fmt.Sprintf("File %s does not exists /usr/share/clide/examples/. Checking for clide examples on the web with name %s ...", os.Args[1], os.Args[1])
+			log.Println(errorText)
+			typer.Pos.X = 5
+			typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 			if err != nil {
 				panic(err)
 			}
 
 			//if not finally check clide demo fileserver
-			resp, err = http.Get("https://clide.sh/demos/" + os.Args[1])
+			resp, err = http.Get("https://mattackard.github.io/Clide/demos" + os.Args[1])
 			if err != nil || resp.StatusCode != 200 {
-				typer.Pos, err = clide.Print(typer, "Could not find file at clide.sh/demos", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+				log.Println("Could not find file at mattackard.github.io/Clide/demos")
+				typer.Pos.X = 5
+				typer.Pos, err = clide.Print(typer, "Could not find file at mattackard.github.io/Clide/demos", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 				if err != nil {
 					panic(err)
 				}
 				exit(10, exitChan)
 			}
 		}
+
+		//if demo is found in an alternate location, destroy error window
+		window.Destroy()
 	}
 
 	//unmarshal clide json into config struct
@@ -280,7 +288,7 @@ func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
 		return nil, err
 	}
 
-	iconSurface, err := sdl.LoadBMP("./assets/clide_icon.bmp")
+	iconSurface, err := sdl.LoadBMP("/usr/share/clide/assets/clide_icon.bmp")
 	if err != nil {
 		return nil, err
 	}

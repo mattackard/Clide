@@ -58,7 +58,7 @@ func (cfg Config) Validate() (Config, error) {
 
 	//font defaults
 	if cfg.FontPath == "" {
-		cfg.FontPath = "assets/UbuntuMono-B.ttf"
+		cfg.FontPath = "/usr/share/clide/assets/UbuntuMono-B.ttf"
 	}
 	if cfg.FontSize == 0 {
 		cfg.FontSize = 18
