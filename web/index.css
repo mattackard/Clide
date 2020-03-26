@@ -1,9 +1,50 @@
+body {
+    font-size: 1.3rem;
+}
+
 video {
     display: block;
     margin: 4rem auto;
+    box-shadow: 0 3px 8px black;
+}
+
+#download {
+    background: rgb(255, 114, 62);
+    padding: 2rem;
+    margin: 0 auto;
+    color: black;
+    font-size: 1.6rem;
+    font-weight: bold;
+    box-shadow: 0 1px 5px black;
+}
+
+.center {
+    text-align: center;
+}
+
+span {
+    background-color: rgb(223, 222, 222);
+    padding: 0 0.6rem;
+    border-radius: 0.2rem;
+}
+
+#download svg {
+    width: 5rem;
+    height: 3rem;
+    margin-bottom: -1rem;
+    margin-left: 1rem;
 }
 
 h3 {
     margin-top: 3rem;
 }
 
+section {
+    font-size: 1.5rem;
+}
+
+#installImg {
+    display: block;
+    margin: -3rem auto 0;
+    width: 80%;
+}

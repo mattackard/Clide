@@ -15,46 +15,39 @@
             </nav>
         </header>
         <video src="clide_demo.webm" autoplay muted loop></video>
+        <section class="center">
+            <a id="download" href="https://github.com/mattackard/Clide/releases/download/v1.1.0/clide_1.1.0.deb" download>
+                Download clide_1.1.0.deb 
+                <?xml version="1.0" ?><svg height="16px" version="1.1" viewBox="0 0 16 16" width="16px"><title/>
+                    <defs/><g fill="none" fill-rule="evenodd" id="Icons with numbers" stroke="none" stroke-width="1"><g fill="#000000" id="Group" transform="translate(-720.000000, -432.000000)">
+                        <path d="M721,446 L733,446 L733,443 L735,443 L735,446 L735,448 L721,448 Z M721,443 L723,443 L723,446 L721,446 Z M726,433 L730,433 L730,440 L732,440 L728,445 L724,440 L726,440 Z M726,433" id="Rectangle 217"/>
+                    </g></g>
+                </svg>
+            </a>
+        </section>
         <section>
             <p>Clide is a tool for creating automated demos for terminal-based applications. 
                 Using a json file, you can script out a demo in the terminal to free your hands up from having to copy and paste commands, 
                 or handle typos when you're in the middle of giving a presentation.</p>
         </section>
         <section>
-            <h2>Getting Started</h2>
-            <p>Clide is not ready for a full release at this time, so the best way to get started using it is to clone the repository. 
-                From there you can run the go file in <span>cmd/clide</span> directly, or build it and move the binary into your bin path.</p>
-        </section>
-        <section>
             <h2>Installation</h2>
-            <p>Clide uses the <a href="https://github.com/veandco/go-sdl2" target="_blank">go-sdl2</a> project to create it's windows and track program events. 
-                Go-sdl2 requires SDL to be installed to you pkg-config. 
-                Check the <a href="https://github.com/veandco/go-sdl2#requirements">installation requirements</a> in sdl2's readme for the most up-to-date guide for installation.
-
-                The Clide source contains an `examples` folder that contains sample json demos. 
-                It is recommended to try out running clide with one of the included demo json files to confirm all dependencies are installed.</p>
-            <h3>Running a demo using Go:</h3>
-
-            <span>go run cmd/clide/*.go examples/demo.json</span>
-            
-            <h3>Running a demo from a built binary:</h3>
-            
-            <span>clide examples/demo.json</span>
+            <p>Clide is currently only supporting debian-based linux distributions, but clide is still in active development!
+                Future development will result in releases supported different linux package managers and maybe even Windows and MacOS.
+                Once clide is installed, run it from the terminal using the clide command.</p></br>
+            <img id="installImg" src="clide-demos.png" alt="how to run clide demos in terminal">
+            <p>The demos included with the binary are <span>demo</span>, <span>windows</span>, and <span>network</span>. 
+                These json files can be found in the <span>/usr/share/clide/examples</span> folder for reference. 
+                Looking at the included demo json files is a good starting point to see all the options available when creating a demo with clide. 
+                Note that some included demos may use linux packages not installed on your system. 
+                If you see an error about a command not running because a program is not installed, you must install the package for the demo to execute properly.</p></br>
+            <p>Follow the docs link at the top of the page to get information about what each of the possible json fields will do for your demo.</p>
         </section>
         <section>
             <h2>Development</h2>
-            <p>To get started working with clide yourself, clone or fork the repository. 
-                This project follows the common <a href="https://github.com/golang-standards/project-layout">Go Standard Project Layout</a> for organization of program files. 
-                For this reason, you can find the main application inside the cmd folder and any supporting packages inside the pkg folder. 
-
-                The included <span>Makefile</span> has small helper scripts to run and build the project quickly. 
-                You can run these by navigating to the root project directory and running make along with the script you want to execute.</p>
-                
-                <p><span>make builds</span></p>
-                
-                <p><span>make run-demo</span></p>
-                
-                <p>The demo files in the <span>examples</span> folder is a good place to start tweaking the setting and getting familiar with everything clide can do.</p>
+            <p>To get started developing with clide, follow the github link at the top right of the page. 
+                From there you can clone or fork the project and customize as you please.</p></br>
+            <p>The docs link at the top of the page includes information about the clide package and structs within it.</p>
         </section>
         <script src="index.js"></script>
     </body>
