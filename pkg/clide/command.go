@@ -50,10 +50,21 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
-		typer, err = ClearWindow(typer)
+		bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
 		if err != nil {
 			return typer, err
 		}
+
+		typer, err = ClearWindow(typer, bgColor)
+		if err != nil {
+			return typer, err
+		}
+	}
+
+	//get text color
+	textColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
+	if err != nil {
+		return Typer{}, err
 	}
 
 	//parse program from command string
@@ -108,7 +119,7 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 				for outputScanner.Scan() {
 					line := outputScanner.Text()
 					typer.Pos.X = 5
-					typer.Pos, err = Print(typer, line)
+					typer.Pos, err = Print(typer, line, textColor)
 				}
 			}()
 			go func() {
@@ -116,7 +127,7 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 				for errScanner.Scan() {
 					line := errScanner.Text()
 					typer.Pos.X = 5
-					typer.Pos, err = Print(typer, line)
+					typer.Pos, err = Print(typer, line, textColor)
 				}
 			}()
 
@@ -155,7 +166,7 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 			for scanner.Scan() {
 				line := scanner.Text()
 				typer.Pos.X = 5
-				typer.Pos, err = Print(typer, line)
+				typer.Pos, err = Print(typer, line, textColor)
 			}
 		}()
 
@@ -174,7 +185,7 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 			return Typer{}, err
 		}
 		typer.Pos.X = 5
-		typer.Pos, err = Print(typer, string(output))
+		typer.Pos, err = Print(typer, string(output), textColor)
 		if err != nil {
 			return Typer{}, err
 		}
@@ -183,9 +194,8 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 }
 
 // ClearWindow removes all content on the window specified in typer
-func ClearWindow(typer Typer) (Typer, error) {
+func ClearWindow(typer Typer, color sdl.Color) (Typer, error) {
 	var surface *sdl.Surface
-	var backgroundColor sdl.Color
 	var err error
 
 	//get surface info
@@ -200,8 +210,15 @@ func ClearWindow(typer Typer) (Typer, error) {
 		W: surface.W,
 		H: surface.H,
 	}
-	backgroundColor = sdl.Color{R: 255, G: 30, B: 30, A: 30}
-	surface.FillRect(&rect, backgroundColor.Uint32())
+
+	//set color to correct for the weirdness in the Uint32 conversion
+	colorFix := sdl.Color{
+		R: color.A,
+		G: color.R,
+		B: color.G,
+		A: color.B,
+	}
+	surface.FillRect(&rect, colorFix.Uint32())
 
 	//draw the rect and update typer position
 	typer.Window.UpdateSurface()

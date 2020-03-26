@@ -74,20 +74,20 @@ func main() {
 		}
 
 		fmt.Println("You must provide a clide configured json file to run a demo.")
-		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.")
+		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n" + helpText)
 		typer.Pos.X = 20
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, helpText)
+		typer.Pos, err = clide.Print(typer, helpText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		typer.Pos.X = 5
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds")
+		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		if err != nil {
 			panic(err)
 		}
@@ -133,7 +133,7 @@ func main() {
 		}
 
 		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide", os.Args[1])
-		typer.Pos, err = clide.Print(typer, errorText)
+		typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		if err != nil {
 			panic(err)
 		}
@@ -142,7 +142,7 @@ func main() {
 		file, err = os.Open("/usr/share/clide/" + os.Args[1])
 		if err != nil {
 			errorText = fmt.Sprintf("File %s does not exists /usr/share/clide. Checking for clide examples on clide.sh with name %s ...", os.Args[1], os.Args[1])
-			typer.Pos, err = clide.Print(typer, errorText)
+			typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			if err != nil {
 				panic(err)
 			}
@@ -150,7 +150,7 @@ func main() {
 			//if not finally check clide demo fileserver
 			resp, err = http.Get("https://clide.sh/demos/" + os.Args[1])
 			if err != nil || resp.StatusCode != 200 {
-				typer.Pos, err = clide.Print(typer, "Could not find file at clide.sh/demos")
+				typer.Pos, err = clide.Print(typer, "Could not find file at clide.sh/demos", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 				if err != nil {
 					panic(err)
 				}
@@ -215,7 +215,11 @@ func main() {
 		}
 
 		//reset window background color
-		typer, err = clide.ClearWindow(typer)
+		bgColor, err := clide.StringToColor(cfg.ColorScheme.TerminalBG)
+		if err != nil {
+			panic(err)
+		}
+		typer, err = clide.ClearWindow(typer, bgColor)
 		if err != nil {
 			panic(err)
 		}
@@ -245,7 +249,7 @@ func main() {
 
 		err := cmd.Validate()
 		if err != nil {
-			clide.Print(typerList[index], err.Error())
+			clide.Print(typerList[index], err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		}
 
 		if cmd.IsInstalled() {
@@ -256,7 +260,7 @@ func main() {
 		} else {
 			if !cfg.HideWarnings {
 				warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
-				typerList[index].Pos, err = clide.Print(typerList[index], warning)
+				typerList[index].Pos, err = clide.Print(typerList[index], warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 				if err != nil {
 					panic(err)
 				}

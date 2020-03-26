@@ -6,6 +6,14 @@
     "hideWarnings": false,
     "clearBeforeAll": false,
     "keyTriggerAll": false,
+    "fontPath": "assets/UbuntuMono-B.ttf",
+    "fontSize": 24,
+    "colorScheme": {
+        "userText": "0,150,255,255",
+        "directoryText": "150,255,150,255",
+        "primaryText": "220,220,220,255",
+        "terminalBG": "30,30,30,255"
+    },
     "windows": [
         {
             "name": "Clide",
@@ -105,10 +113,6 @@
             "typed": true,
             "predelay": 1000,
             "postdelay": 1000
-        },
-        {
-            "cmd": "clear",
-            "predelay": 3000
         }
     ]
 }

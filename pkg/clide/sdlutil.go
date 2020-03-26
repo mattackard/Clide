@@ -32,11 +32,9 @@ type Font struct {
 	Size int
 }
 
-var textColor = sdl.Color{R: 220, G: 220, B: 220, A: 255}
-
 // Type prints the text to a sdl2 window and simulates a user typing the string
 // it returns a position struct describing the completed surface
-func Type(typer Typer, text string) (Position, error) {
+func Type(typer Typer, text string, color sdl.Color) (Position, error) {
 	//split string into array of cingle characters
 	split := strings.Split(text, "")
 
@@ -72,7 +70,7 @@ func Type(typer Typer, text string) (Position, error) {
 		defer font.Close()
 
 		// Create text using font
-		if textsurface, err = font.RenderUTF8Blended(char, textColor); err != nil {
+		if textsurface, err = font.RenderUTF8Blended(char, color); err != nil {
 			return Position{}, err
 		}
 		defer textsurface.Free()
@@ -108,7 +106,7 @@ func Type(typer Typer, text string) (Position, error) {
 }
 
 // Print prints text to the sdl2 window all at once
-func Print(typer Typer, text string) (Position, error) {
+func Print(typer Typer, text string, color sdl.Color) (Position, error) {
 	split := strings.Split(text, "\n")
 
 	var surface *sdl.Surface
@@ -133,7 +131,7 @@ func Print(typer Typer, text string) (Position, error) {
 	for _, line := range split {
 		if len(line) > 0 {
 			// Create text using font
-			if textsurface, err = font.RenderUTF8Blended(line, textColor); err != nil {
+			if textsurface, err = font.RenderUTF8Blended(line, color); err != nil {
 				return Position{}, err
 			}
 			defer textsurface.Free()
