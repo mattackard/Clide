@@ -2,6 +2,8 @@ package clide
 
 import (
 	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 //prompt returns a string used to emulate a terminal prompt
@@ -47,19 +49,25 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 	}
 
 	if cmd.WaitForKey || cfg.KeyTriggerAll {
-		ListenForKey(cfg)
+		if len(cfg.TiggerKeys) == 0 {
+			pos, err := Print(typer, "WaitForKey or KeyTriggerAll is set, but no TriggerKeys are defined!", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			if err != nil {
+				return Typer{}, err
+			}
+
+			typer.Pos.Y = pos.Y
+			typer.Pos.X = 5
+			typer, err = printPrompt(cfg, typer)
+			if err != nil {
+				return Typer{}, err
+			}
+		} else {
+			ListenForKey(cfg)
+		}
 	} else {
 		//wait before writing the command to the terminal
 		time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
 	}
-
-	//set typer x position after command prompt
-	// typer.Pos = Position{
-	// 	X: pos.X,
-	// 	Y: typer.Pos.Y,
-	// 	H: pos.H,
-	// 	W: pos.W,
-	// }
 
 	primaryColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
 	if err != nil {
@@ -80,7 +88,9 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 	}
 
 	if cmd.WaitForKey || cfg.KeyTriggerAll {
-		ListenForKey(cfg)
+		if len(cfg.TiggerKeys) != 0 {
+			ListenForKey(cfg)
+		}
 	} else {
 		//wait before executing the command, but after writing to the terminal
 		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
