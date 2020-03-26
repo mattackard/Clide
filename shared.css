@@ -5,10 +5,6 @@
     font-family: 'Roboto', sans-serif;
 }
 
-body {
-    font-size: 1.3rem;
-}
-
 header {
     display: flex;
     flex-direction: row;
@@ -16,6 +12,7 @@ header {
     background: black;
     color: white;
     padding: 1em;
+    border-bottom: 4px solid orangered;
 }
 
 a {
@@ -53,10 +50,4 @@ section {
     width: 70%;
     margin: 3em 15%;
     line-height: 1.5;
-}
-
-span {
-    background-color: rgb(194, 194, 194);
-    padding: 0 0.3rem;
-    border-radius: 0.2rem;
 }

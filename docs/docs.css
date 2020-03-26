@@ -1,3 +1,7 @@
+body {
+    font-size: 1.1rem;
+}
+
 header {
     margin-bottom: 7rem;
 }
@@ -10,6 +14,8 @@ header {
     width: 20vw;
     background-color: white;
     border-right: 1px solid black;
+    overflow-y: visible;
+    overflow-x: hidden;
 }
 
 .navbar h1 a {
@@ -24,9 +30,10 @@ header {
 
 .navbar h1 {
     background-color: black;
-    padding: 0.45em;
+    padding: 0.33em;
     width: 100%;
     margin-bottom: 2rem;
+    border-bottom: 4px solid orangered;
 }
 
 .navbar nav {
@@ -44,9 +51,16 @@ header {
 section {
     margin-left: 25vw;
     width: 65%;
+    margin-bottom: 10rem;
 }
 
 img {
+    margin-left: 25vw;
+    width: 45%;
+}
+
+#examplejson img {
+    margin-left: 0;
     width: 70%;
 }
 
@@ -56,9 +70,43 @@ h2 {
 }
 
 h3 {
+    font-size: 2rem;
     margin-bottom: 0.5em;
 }
 
 section ul {
     margin: 1rem 4rem;
+}
+
+section div {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
+
+.codeExample {
+    background: black;
+    margin-left: 3rem;
+    margin-bottom: 1rem;
+}
+
+h4 {
+    color: white;
+    padding: 0.5rem 1rem 0;
+}
+
+span {
+    background: white;
+    border: 1px solid black;
+    padding: 0.4rem 1rem;
+}
+
+/* nav scrollbar styling */
+html {
+    --scrollbarBG: white;
+    --thumbBG: black;
+}
+body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--thumbBG) var(--scrollbarBG);
 }
