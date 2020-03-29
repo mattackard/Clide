@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html id="top">
+    <head>
+        <title>Clide Documentation</title>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet"> 
+        <link rel="stylesheet" href="../shared.css">
+        <link rel="stylesheet" href="docs.css">
+    </head>
+    <body>
+        <header>
+            <h1><a href="#top">Clide</a></h1>
+            <nav>
+                <li><a href="../convert.html">Script Convert</a></li>
+                <li><a href="../edit.html">Modular Editor</a></li>
+            </nav>
+        </header>
+        <div class="navbar">
+            <nav>
+                <h1><a href="#top">Clide Docs</a></h1>
+                <li><a href="#examplejson">Example JSON</a></li>
+                <li><a href="#configuration">Configuration Reference</a></li>
+                <li class="subnav"><a href="#user">user</a></li>
+                <li class="subnav"><a href="#directory">directory</a></li>
+                <li class="subnav"><a href="#typespeed">typespeed</a></li>
+                <li class="subnav"><a href="#humanize">humanize</a></li>
+                <li class="subnav"><a href="#hideWarnings">hideWarnings</a></li>
+                <li class="subnav"><a href="#clearBeforeAll">clearBeforeAll</a></li>
+                <li class="subnav"><a href="#keyTriggerAll">keyTriggerAll</a></li>
+                <li class="subnav"><a href="#fontPath">fontPath</a></li>
+                <li class="subnav"><a href="#fontSize">fontSize</a></li>
+                <li class="subnav"><a href="#colorScheme">colorScheme</a></li>
+                <li class="subnav"><a href="#triggerKeys">triggerKeys</a></li>
+                <li class="subnav"><a href="#windows">windows</a></li>
+                <li class="subnav"><a href="#commands">commands</a></li>
+                <li><a href="#command">Command Reference</a></li>
+                <li class="subnav"><a href="#cmd">cmd</a></li>
+                <li class="subnav"><a href="#window">window</a></li>
+                <li class="subnav"><a href="#typed">typed</a></li>
+                <li class="subnav"><a href="#clearBeforeRun">clearBeforeRun</a></li>
+                <li class="subnav"><a href="#waitForKey">waitForKey</a></li>
+                <li class="subnav"><a href="#hidden">hidden</a></li>
+                <li class="subnav"><a href="#async">async</a></li>
+                <li class="subnav"><a href="#preDelay">preDelay</a></li>
+                <li class="subnav"><a href="#postDelay">postDelay</a></li>
+                <li class="subnav"><a href="#timeout">timeout</a></li>
+            </nav>
+        </div>
+        <div class="content">
+            <h2>Clide Config/Command Reference</h2>
+            <section>
+                <p>Clide uses a JSON file for running demos. This documents explains what each JSON field does when running a Clide demo.</p>
+            </section>
+            <section id="examplejson">
+                <h3>Example JSON</h3>
+                <img src="examplejson.png" alt="example clide demo in json format">
+            </section>
+            <h2 id="configuration">Global Configuration</h2>
+            <img src="config_struct.png" alt="clide config struct">
+            <section id="user">
+                <div>
+                    <h3>user</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"user": "demo@clide"</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.User = "demo@clide"</span>
+                    </div>
+                </div>
+                <p>The username that appears in the clide terminal window</p>
+            </section>
+            <section id="directory">
+                <div>
+                    <h3>directory</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"directory": "/"</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.Directory = "/"</span>
+                    </div>
+                </div>
+                <p>The directory that appears in the clide terminal window</p>
+            </section>
+            <section id="typespeed">
+                <div>
+                    <h3>typespeed</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"typespeed": 100</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.TypeSpeed = 100</span>
+                    </div>
+                </div>
+                <p>The delay before each character is printed to the terminal in milliseconds. 
+                    When humanize is set, the delay will be randomized based on the humaize ratio for each character.
+                    Typespeed is actually a measurement of a timed delay, so a higher typespeed will mean slower typing.</p>
+            </section>
+            <section id="humanize">
+                <div>
+                    <h3>humanize</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"humanize": 0.5</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.Humanize = 0.5</span>
+                    </div>
+                </div>
+                <p>The ratio used in randomizing the delay for each character printed into the terminal. 
+                    This value is expected to be between 0.0 and 1.0.
+                    A value of 0.5 would randomize the key delay between +50% and -50%.</p>
+            </section>
+            <section id="hideWarnings">
+                <div>
+                    <h3>hideWarnings</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"hideWarnings": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.HideWarnings = false</span>
+                    </div>
+                </div>
+                <p>Sets whether warnings for uninstalled commands will be shown. 
+                    If set, a warning will be printed before running the demo showing the uninstalled commands.
+                    Another warning will also appear during runtime showing that the uninstalled command has been skipped.</p>
+            </section>
+            <section id="clearBeforeAll">
+                <div>
+                    <h3>clearBeforeAll</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"clearBeforeAll": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.ClearBeforeAll = false</span>
+                    </div>
+                </div>
+                <p>A global setting to clear the terminal window before every command. 
+                    Setting this to true is identical to setting 'clearBeforeRun' for each command in the demo.</p>
+            </section>
+            <section id="keyTriggerAll">
+                <div>
+                    <h3>keyTriggerAll</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"keyTriggerAll": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.KeyTriggerAll = false</span>
+                    </div>
+                </div>
+                <p>A global setting to ignore timings and wait for a key press to execute the command print and execute.
+                    The key used to trigger the timings must be present in the triggerKeys array for clide to recognize the event.
+                    Setting this to true is identical to setting 'waitForKey' for each command in the demo.</p>
+            </section>
+            <section id="fontPath">
+                <div>
+                    <h3>fontPath</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"fontPath": "assets/UbuntuMono-B.ttf"</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.FontPath = "assets/UbuntuMono-B.ttf"</span>
+                    </div>
+                </div>
+                <p>The file path for the font file you want clide to use when drawing text to all windows.</p>
+            </section>
+            <section id="fontSize">
+                <div>
+                    <h3>fontSize</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"fontSize": 18</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.FontSize = 18</span>
+                    </div>
+                </div>
+                <p>The size of the font written to all clide windows.</p>
+            </section>
+            <section id="colorScheme">
+                <div>
+                    <h3>colorScheme</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"colorScheme": {"R":255,"G":255,"B":255,"A",255}</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.ColorScheme = clide.Colors{}</span>
+                    </div>
+                </div>
+                <p>The color scheme used for all windows. Customizable fields include user text, directory text, primary text, and window background.</p>
+            </section>
+            <section id="triggerKeys">
+                <div>
+                    <h3>triggerKeys</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"triggerKeys": ["space", "right", "a"]</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.TriggerKeys = [ ]string{"space", "right", "a"}</span>
+                    </div>
+                </div>
+                <p>The list of keyboard keys that can be used to trigger the execution or typing/printing of a command.
+                    Clide uses go-sdl2 for keyboard event handling.
+                    The list of recognized strings representations for keys can be found in the 
+                    <a href="https://github.com/veandco/go-sdl2/blob/master/sdl/keycode.go" target="_blank">keycodes.go</a> file
+                    in the go-sdl2 github repository.</p>
+            </section>
+            <section id="windows">
+                <div>
+                    <h3>windows</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"windows": {"name":"clide","x":0,"y":0,"h":600,"w":800}</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.Windows = [ ]clide.Window{ }</span>
+                    </div>
+                </div>
+                <p>The collection of data representing the size and position of the clide terminal window.
+                    Multiple can be specified and each can be targeted using the window's unique name.</p>
+            </section>
+            <section id="commands">
+                <div>
+                    <h3>commands</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"commands": [ { } ]</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.Commands = [ ]clide.Command{ }</span>
+                    </div>
+                </div>
+                <p>Holds the array of command objects to run during the demo. 
+                    A commands field is required for Clide to run a demo.
+                    See the next section of for more information regarding fields used for commands.</p>
+            </section>
+            <h2 id="command">Command Configuration</h2>
+            <img src="command_struct.png" alt="clide command struct">
+            <section id="cmd">
+                <div>
+                    <h3>cmd</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"cmd": "echo hello world!"</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.CmdString = "echo hello world!"</span>
+                    </div>
+                </div>
+                <p>A string containing the command as you would type it into a terminal.</p>
+            </section>
+            <section id="window">
+                <div>
+                    <h3>window</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"window": "clide"</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.Window = "clide"</span>
+                    </div>
+                </div>
+                <p>Specifies the window in a multi-window demo to execute the command in. 
+                    Note that the process is executed in a separate process and the output is sent to the given window.</p>
+            </section>
+            <section id="typed">
+                <div>
+                    <h3>typed</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"typed": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.Typed = false</span>
+                    </div>
+                </div>
+                <p>Determines whether the command will be typed into the terminal.
+                    If set to false, the whole command string will be printed to the terminal.</p>
+            </section>
+            <section id="clearBeforeRun">
+                <div>
+                    <h3>clearBeforeRun</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"clearBeforeRun": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.ClearBeforeRun = false</span>
+                    </div>
+                </div>
+                <p>Clears the terminal before running the given command.</p>
+            </section>
+            <section id="waitForKey">
+                <div>
+                    <h3>waitForKey</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"waitForKey": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.WaitForKey = false</span>
+                    </div>
+                </div>
+                <p>Waits for a key present in triggerKeys to be pressed to execute the printing/typing of the command, and the execution of the command.
+                    If set, timings in preDelay and postDelay will be ignored.</p>
+            </section>
+            <section id="hidden">
+                <div>
+                    <h3>hidden</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"hidden": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.Hidden = false</span>
+                    </div>
+                </div>
+                <p>Runs the command in the background.
+                    The command will not be typed into the terminal and no output will be displayed.</p>
+            </section>
+            <section id="async">
+                <div>
+                    <h3>async</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"async": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.Async = false</span>
+                    </div>
+                </div>
+                <p>Runs the command and continues on to the next command without waiting for execution to finish.
+                    If async commands are running alongside other commands, each command must be in its own window for the output to display correctly.</p>
+            </section>
+            <section id="preDelay">
+                <div>
+                    <h3>preDelay</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"preDelay": 500</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.PreDelay = 500</span>
+                    </div>
+                </div>
+                <p>Sets the amount of delay in milliseconds before the command will be typed/printed to the terminal. 
+                    While preDelay is waiting, the command prompt will be visible in the terminal.</p>
+            </section>
+            <section id="postDelay">
+                <div>
+                    <h3>postDelay</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"postDelay": 500</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.PostDelay = 500</span>
+                    </div>
+                </div>
+                <p>Sets the amount of delay in milliseconds before the command will be executed. 
+                    While postDelay is waiting, the command prompt and command to be executed will be visible in the terminal.</p>
+            </section>
+            <section id="timeout">
+                <div>
+                    <h3>timeout</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"timeout": 5</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.Timeout = 5</span>
+                    </div>
+                </div>
+                <p>Sets the amount of time to wait in seconds before killing the process. 
+                    Use this field with commands that don't exit without user input (ex. listening servers, ping)</p>
+            </section>
+        </div>
+    </body>
+</html>
