@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/mattackard/Clide/pkg/clide"
@@ -19,16 +21,53 @@ type Request struct {
 	FileContents string `json:"fileContents"`
 }
 
+//Files stores the information for the files being worked on in the editor
+type Files struct {
+	ScriptText string `json:"scriptText"`
+	JSONText   string `json:"jsonText"`
+}
+
+// Initialize a files struct for persistent storage
+var files = Files{}
+
 // open a webview connection using the client.html file
 // css and js is loaded in through the html
 func main() {
+	//get file contents passed in as an argumemnt
+	if len(os.Args) > 1 {
+		file, err := os.Open(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+
+		contents, err := ioutil.ReadAll(file)
+		if err != nil {
+			panic(err)
+		}
+
+		if strings.HasSuffix(os.Args[1], ".json") {
+			files.JSONText = string(contents)
+		} else if strings.HasSuffix(os.Args[1], ".sh") {
+			files.ScriptText = string(contents)
+
+			bytes, err := buildClide(files.ScriptText)
+			if err != nil {
+				log.Println("Could not convert contents of given file to clide configuration")
+			}
+
+			files.JSONText = string(bytes)
+		}
+	}
+
 	//set up webview gui
 	w := webview.New(true)
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
-	w.Navigate("file:///home/ubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/convert.html")
+	w.Navigate("file:///home/kubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/convert.html")
 
+	http.HandleFunc("/getFiles", getFiles)
+	http.HandleFunc("/save", saveFiles)
 	http.HandleFunc("/convert", convertToClide)
 
 	// start http server for communiaction with gui js
@@ -36,6 +75,36 @@ func main() {
 
 	// launch webview gui
 	w.Run()
+}
+
+// getFiles sends the contents of the currently stored file contents
+func getFiles(w http.ResponseWriter, r *http.Request) {
+	w = setHeaders(w)
+
+	bytes, err := json.Marshal(files)
+	if err != nil {
+		httpError(w, err, http.StatusInternalServerError)
+	}
+
+	w.Write(bytes)
+}
+
+// saveFiles saves the contents of the files from the client editor to the files struct
+func saveFiles(w http.ResponseWriter, r *http.Request) {
+	//read request body
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httpError(w, err, http.StatusInternalServerError)
+	}
+
+	//store contents of request body into global files struct
+	err = json.Unmarshal(body, &files)
+	if err != nil {
+		httpError(w, err, http.StatusInternalServerError)
+	}
+
+	w = setHeaders(w)
+	w.Write([]byte("OK"))
 }
 
 // convertToClide takes the file sent and converts it into a clide demo
@@ -48,11 +117,19 @@ func convertToClide(w http.ResponseWriter, r *http.Request) {
 
 	switch contentType {
 	case "json":
+		//store json into files
+		files.JSONText = body.FileContents
+
+		//write the json back as response
 		w = setHeaders(w)
 		w.Write([]byte(body.FileContents))
 	case "script":
+		//store script into files
+		files.ScriptText = body.FileContents
+
 		clide, err := buildClide(body.FileContents)
 		httpError(w, err, http.StatusInternalServerError)
+		files.JSONText = string(clide)
 
 		w = setHeaders(w)
 		w.Write(clide)
