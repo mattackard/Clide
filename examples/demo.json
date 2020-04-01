@@ -102,7 +102,7 @@
             "postdelay": 1000
         },
         {
-            "cmd": "echo Check out the json files in the projects '/examples' directory to see more demos and to look at example json configurations.",
+            "cmd": "echo Check out the json files in the 'usr/share/clide/examples' directory to see more demos and to look at example json configurations.",
             "typed": true,
             "clearBeforeRun": true,
             "predelay": 1000,
