@@ -1,118 +1,115 @@
 {
-    "user": "demo@clide",
-    "directory": "/",
-    "typespeed": 100,
-    "humanize": 0.9,
-    "hideWarnings": false,
-    "clearBeforeAll": false,
-    "keyTriggerAll": false,
-    "fontPath": "assets/UbuntuMono-B.ttf",
-    "fontSize": 24,
-    "colorScheme": {
-        "userText": "0,150,255,255",
-        "directoryText": "150,255,150,255",
-        "primaryText": "220,220,220,255",
-        "terminalBG": "30,30,30,255"
+  "user": "demo@clide",
+  "directory": "/",
+  "typespeed": 100,
+  "humanize": 0.9,
+  "hideWarnings": false,
+  "clearBeforeAll": false,
+  "keyTriggerAll": false,
+  "fontPath": "assets/UbuntuMono-B.ttf",
+  "fontSize": 24,
+  "colorScheme": {
+    "userText": "0,150,255,255",
+    "directoryText": "150,255,150,255",
+    "primaryText": "220,220,220,255",
+    "terminalBG": "30,30,30,255"
+  },
+  "windows": [
+    {
+      "name": "Clide",
+      "x": 0,
+      "y": 0,
+      "height": 800,
+      "width": 1200
+    }
+  ],
+  "triggerKeys": ["Space", "Right"],
+  "commands": [
+    {
+      "cmd": "echo Welcome to the Clide demo!",
+      "typed": true,
+      "clearBeforeRun": true,
+      "predelay": 500,
+      "postdelay": 800
     },
-    "windows": [
-        {
-            "name": "Clide",
-            "x": 0,
-            "y": 0,
-            "height": 800,
-            "width": 1200
-        }
-    ],
-    "triggerKeys": [
-        "Space",
-        "Right"
-    ],
-    "commands": [
-        {
-            "cmd": "echo Welcome to the Clide demo!",
-            "typed": true,
-            "clearBeforeRun": true,
-            "predelay": 500,
-            "postdelay": 800
-        },
-        {
-            "cmd": "echo Clide can automate shell commands using timings! I'll wait a few seconds before the next command. . .",
-            "typed": true,
-            "predelay": 500,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo Clide can also trigger on key press. The next command won't run until you press 'space', or 'right arrow'.",
-            "typed": true,
-            "predelay": 3000
-        },
-        {
-            "cmd": "whoami",
-            "waitForKey": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo Clide can also set a timeout for commands that run forever",
-            "typed": true,
-            "predelay": 500,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "ping google.com",
-            "typed": true,
-            "clearBeforeRun": true,
-            "predelay": 500,
-            "postdelay": 1200,
-            "timeout": 5
-        },
-        {
-            "cmd": "echo You can also run hidden commands that will run in the background!",
-            "typed": true,
-            "clearBeforeRun": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo Creating newFile.txt in the background",
-            "typed": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "touch newFile.txt",
-            "hidden": true
-        },
-        {
-            "cmd": "ls",
-            "typed": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo You can see newFile.txt was created! Now we can get rid of it.",
-            "typed": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "rm newFile.txt",
-            "typed": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo Check out the json files in the 'usr/share/clide/examples' directory to see more demos and to look at example json configurations.",
-            "typed": true,
-            "clearBeforeRun": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        },
-        {
-            "cmd": "echo Thanks for checking out Clide, hopefully it will simplify your next CLI demo.",
-            "typed": true,
-            "predelay": 1000,
-            "postdelay": 1000
-        }
-    ]
+    {
+      "cmd": "echo Clide can automate shell commands using timings! I'll wait a few seconds before the next command. . .",
+      "typed": true,
+      "predelay": 500,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo Clide can also trigger on key press. The next command won't run until you press 'space', or 'right arrow'.",
+      "typed": true,
+      "predelay": 3000
+    },
+    {
+      "cmd": "whoami",
+      "waitForKey": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo Clide can also set a timeout for commands that run forever",
+      "typed": true,
+      "predelay": 500,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "ping google.com",
+      "typed": true,
+      "clearBeforeRun": true,
+      "predelay": 500,
+      "postdelay": 1200,
+      "timeout": 5
+    },
+    {
+      "cmd": "echo You can also run hidden commands that will run in the background!",
+      "typed": true,
+      "clearBeforeRun": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo Creating newFile.txt in the background",
+      "typed": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "touch newFile.txt",
+      "hidden": true
+    },
+    {
+      "cmd": "ls",
+      "typed": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo You can see newFile.txt was created! Now we can get rid of it.",
+      "typed": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "rm newFile.txt",
+      "typed": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo Check out the json files in the 'usr/share/clide/examples' directory to see more demos and to look at example json configurations.",
+      "typed": true,
+      "clearBeforeRun": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    },
+    {
+      "cmd": "echo Thanks for checking out Clide, hopefully it will simplify your next CLI demo.",
+      "typed": true,
+      "predelay": 1000,
+      "postdelay": 1000
+    }
+  ]
 }

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/mattackard/Clide/pkg/clide"
@@ -69,6 +70,7 @@ func main() {
 	http.HandleFunc("/getFiles", getFiles)
 	http.HandleFunc("/save", saveFiles)
 	http.HandleFunc("/convert", convertToClide)
+	http.HandleFunc("/run", runDemo)
 
 	// start http server for communiaction with gui js
 	go http.ListenAndServe(":8080", nil)
@@ -77,14 +79,43 @@ func main() {
 	w.Run()
 }
 
+// runDemo test runs the json file provided in the request with clide
+func runDemo(w http.ResponseWriter, r *http.Request) {
+	//parse json
+	body, err := getReqBody(r)
+	httpError(w, err, http.StatusInternalServerError)
+
+	//create a temp file and write the json into it
+	file, err := os.Create("temp.json")
+	httpError(w, err, http.StatusInternalServerError)
+
+	_, err = file.WriteString(body.FileContents)
+	httpError(w, err, http.StatusInternalServerError)
+
+	//update stored json contents
+	files.JSONText = body.FileContents
+
+	file.Close()
+	defer os.Remove("temp.json")
+
+	//execute clide with the temp json as an argument
+	cmd := exec.Command("clide", "temp.json")
+	err = cmd.Start()
+	httpError(w, err, http.StatusInternalServerError)
+
+	w = setHeaders(w)
+	w.Write([]byte("OK"))
+
+	//wait for clide execution to finish before deleting temp file
+	cmd.Wait()
+}
+
 // getFiles sends the contents of the currently stored file contents
 func getFiles(w http.ResponseWriter, r *http.Request) {
 	w = setHeaders(w)
 
 	bytes, err := json.Marshal(files)
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-	}
+	httpError(w, err, http.StatusInternalServerError)
 
 	w.Write(bytes)
 }
@@ -93,15 +124,11 @@ func getFiles(w http.ResponseWriter, r *http.Request) {
 func saveFiles(w http.ResponseWriter, r *http.Request) {
 	//read request body
 	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-	}
+	httpError(w, err, http.StatusInternalServerError)
 
 	//store contents of request body into global files struct
 	err = json.Unmarshal(body, &files)
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-	}
+	httpError(w, err, http.StatusInternalServerError)
 
 	w = setHeaders(w)
 	w.Write([]byte("OK"))
@@ -109,7 +136,6 @@ func saveFiles(w http.ResponseWriter, r *http.Request) {
 
 // convertToClide takes the file sent and converts it into a clide demo
 func convertToClide(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("got a request from ", r.RemoteAddr)
 	body, err := getReqBody(r)
 	httpError(w, err, http.StatusInternalServerError)
 
@@ -210,6 +236,7 @@ func setHeaders(w http.ResponseWriter) http.ResponseWriter {
 // sends an error status code as a response
 func httpError(w http.ResponseWriter, err error, statusCode int) {
 	if err != nil {
+		log.Println(err)
 		w = setHeaders(w)
 		w.WriteHeader(statusCode)
 		w.Write([]byte(err.Error()))

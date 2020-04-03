@@ -19,12 +19,13 @@
     </header>
     <div id="menu">
       <form>
-        <label for="fileInput">Open script file</label>
-        <input id="fileInput" type="file" />
+        <label for="fileInput">Open File </label>
+        <input id="fileInput" type="file" hidden />
       </form>
-      <button id="refresh">Re-convert</button>
-      <button id="saveFile">Save</button>
-      <button id="run">Run</button>
+      <button id="refresh">Convert Script</button>
+      <span></span>
+      <button id="saveFile">Save JSON</button>
+      <button id="run">Run Demo</button>
     </div>
     <div id="outputs">
       <textarea id="scriptOutput"></textarea>

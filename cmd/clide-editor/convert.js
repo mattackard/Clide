@@ -3,10 +3,12 @@ const jsonOutput = document.getElementById("jsonOutput");
 const scriptOutput = document.getElementById("scriptOutput");
 const saveFile = document.getElementById("saveFile");
 const refresh = document.getElementById("refresh");
+const run = document.getElementById("run");
 
 fileInput.addEventListener("change", handleFiles, false);
-saveFile.addEventListener("click", saveTextAsFile, false);
+saveFile.addEventListener("click", saveToFile, false);
 refresh.addEventListener("click", convertFromText, false);
+run.addEventListener("click", runDemo, false);
 
 document.addEventListener("DOMContentLoaded", () => {
   //check too see if clide-build was started with any files
@@ -39,7 +41,9 @@ function handleFiles(e) {
   reader.onloadend = () => {
     jsonOutput.innerText = "File conversion in process";
 
-    scriptOutput.innerText = reader.result;
+    if (!fileList[0].name.includes(".json")) {
+      scriptOutput.innerText = reader.result;
+    }
 
     fetch("http://localhost:8080/convert", {
       method: "POST",
@@ -66,11 +70,11 @@ function handleFiles(e) {
   reader.readAsText(fileList[0]);
 }
 
-function saveTextAsFile() {
+function saveToFile() {
   let textToSave = jsonOutput.value;
   let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
   let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-  let fileNameToSaveAs = "myfile.json";
+  let fileNameToSaveAs = "clide-demo.json";
 
   let downloadLink = document.createElement("a");
   downloadLink.download = fileNameToSaveAs;
@@ -105,5 +109,18 @@ function convertFromText() {
         jsonOutput.innerText = text;
       });
     }
+  });
+}
+
+function runDemo() {
+  fetch("http://localhost:8080/run", {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      filename: "",
+      fileContents: jsonOutput.value
+    })
   });
 }

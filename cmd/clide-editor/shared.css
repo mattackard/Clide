@@ -1,93 +1,139 @@
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
 }
 
 header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    background: black;
-    color: white;
-    padding: 1em;
-    border-bottom: 4px solid orangered;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background: black;
+  color: white;
+  padding: 1em;
+  border-bottom: 4px solid orangered;
 }
 
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 header a {
-    margin-left: 5rem;
-    color: white;
+  margin-left: 5rem;
+  color: white;
 }
 
 nav {
-    list-style: none;
-    display: flex;
-    flex-direction: row;
-    margin-right: 5rem;
-    padding-top: 0.5rem;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  margin-right: 5rem;
+  padding-top: 0.5rem;
 }
 
 nav li {
-    padding: 0 0;
+  padding: 0 0;
 }
 
 nav a {
-    font-weight: bold;
-    font-size: 2rem;
+  font-weight: bold;
+  font-size: 2rem;
 }
 
 a:hover {
-    opacity: 0.8;
-    text-decoration: underline;
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
 #menu {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 86%;
-    margin: 0 7%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 86%;
+  margin: 1rem 7%;
 }
 
-#menu button {
-    display: inline-block;
-    margin: auto 2rem;
-    font-size: 1.1rem;
-    padding: 0.3rem;
+#menu span {
+  flex-grow: 2;
+}
+
+#menu input {
+  border: 1px solid black;
+}
+
+#menu button,
+#menu label {
+  display: inline-block;
+  margin: auto 2rem;
+  font-size: 1.1rem;
+  padding: 0.2rem 1rem;
+  background-color: rgb(255, 111, 59);
+  border: 1px solid black;
+  color: white;
+  font-weight: bold;
+}
+
+#menu button:hover,
+#menu label:hover {
+  opacity: 0.6;
 }
 
 form {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    vertical-align: baseline;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  vertical-align: baseline;
 }
 
 form input {
-    margin-top: 1rem;
+  margin-top: 1rem;
 }
 
 form label {
-    margin: 1rem;
+  margin: 1rem;
 }
 
 #outputs {
-    display: flex;
-    flex-direction: row;
-    width: 90%;
-    margin: 0 5%;
+  display: flex;
+  flex-direction: row;
+  width: 90%;
+  margin: 0 5%;
 }
 
 #outputs textarea {
-    width: 50%;
-    height: 80vh;
-    padding: 1rem;
-    margin: 0 1rem;
-    overflow: visible;
-    font-size: 1rem;
+  width: 50%;
+  height: 80vh;
+  padding: 1rem;
+  margin: 0 1rem;
+  overflow: visible;
+  font-size: 1rem;
+}
+
+#global {
+  width: 80%;
+  margin: 3rem 10% 0;
+  padding: 4rem;
+  background-color: orangered;
+}
+
+#global input,
+.command input {
+  margin: 1rem;
+}
+
+#global label,
+.command label {
+  margin-left: 5rem;
+}
+
+#commands {
+  width: 80%;
+  margin: 0 10%;
+}
+
+.command {
+  padding: 2rem;
+  background-color: lightblue;
+  margin: 2rem 0;
 }
