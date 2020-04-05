@@ -17,12 +17,16 @@ import (
 
 const (
 	goroutineMax = 100
-	fontPath     = "/usr/share/clide/assets/UbuntuMono-B.ttf"
-	fontSize     = 18
-	helpText     = `Clide CLI Usage:
+
+	helpText = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
 		clide-editor			opens the clide demo editor GUI interface				
 		clide				shows this help message`
+)
+
+var (
+	fontPath = "/usr/share/clide/assets/UbuntuMono-B.ttf"
+	fontSize = 18
 )
 
 var goroutineCount int
@@ -188,6 +192,14 @@ func main() {
 	cfg, err = cfg.Validate()
 	if err != nil {
 		panic(err)
+	}
+
+	//set font data if set in config
+	if cfg.FontPath != "" {
+		fontPath = cfg.FontPath
+	}
+	if cfg.FontSize != 0 {
+		fontSize = cfg.FontSize
 	}
 
 	//open a window for each defined in json
