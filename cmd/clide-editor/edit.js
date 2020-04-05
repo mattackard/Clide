@@ -18,9 +18,14 @@ const directoryColor = document.getElementById("directoryColor");
 const userPreview = document.getElementById("userPreview");
 const directoryPreview = document.getElementById("directoryPreview");
 const primaryText = document.getElementsByClassName("primaryText");
+const addWindow = document.getElementById("addWindow");
+const arrangeWindows = document.getElementById("arrangeWindows");
+const recordKey = document.getElementById("recordKey");
+let removeButtons = document.getElementsByClassName("removeButton");
 
 //command config elements
 const commands = document.getElementById("commands");
+let addCommand = document.getElementsByClassName("addCommand");
 
 const fileInput = document.getElementById("fileInput");
 const saveFile = document.getElementById("saveFile");
@@ -35,10 +40,60 @@ document.addEventListener("DOMContentLoaded", () => {
   getFiles();
 });
 
+addWindow.addEventListener("click", () => {
+  windowContainer.innerHTML += `<div class="clideWindow">
+        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <div>
+          <label for="windowName">Name</label>
+          <input type="text" class="windowName" value="New Window" />
+        </div>
+        <div>
+          <label for="x">X Position</label>
+          <input type="number" class="x number" value="0" />
+        </div>
+        <div>
+          <label for="y">Y Position</label>
+          <input type="number" class="y number" value="0" />
+        </div>
+        <div>
+          <label for="height">Vertical Resolution</label>
+          <input type="number" class="height number" value="600" />
+        </div>
+        <div>
+          <label for="width">Horizontal Resolution</label>
+          <input type="number" class="width number" value="1000" /></div>`;
+});
+
+function addNewCommand() {
+  commands.innerHTML += `<div class="command">
+        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <input type="text" class="cmd" value="New Command" />
+        <label for="window">Window</label><input type="text" class="window"/>
+        <label for="predelay">PreDelay</label
+        ><input type="number" class="predelay" placeholder="500" value="500" />
+        <label for="postdelay">PostDelay</label
+        ><input type="number" class="postdelay" placeholder="500" value="500" />
+        <label for="timeout">Timeout</label
+        ><input type="number" class="timeout" placeholder="500" />
+        <div>
+        <label for="typed">Typed</label><input type="checkbox" class="typed"/>
+        <label for="hidden">Hidden</label><input type="checkbox" class="hidden"/>
+        <label for="waitForKey">Wait for key press</label
+        ><input type="checkbox" class="waitForKey"/>
+        <label for="clearBeforeRun">Clear window before execution</label
+        ><input type="checkbox" class="clearBeforeRun" />
+        <label for="async">Asynchronous</label
+        ><input type="checkbox" class="async"/></div>`;
+}
+
+function removeElement(element) {
+  element.parentNode.outerHTML = "";
+}
+
 function getFiles() {
-  fetch("http://localhost:8080/getFiles").then(res => {
+  fetch("http://localhost:8080/getFiles").then((res) => {
     if (res.status == 200) {
-      res.json().then(json => {
+      res.json().then((json) => {
         if (json.jsonText) {
           populateConfig(JSON.parse(json.jsonText));
         }
@@ -55,15 +110,15 @@ function handleFiles(e) {
     fetch("http://localhost:8080/convert", {
       method: "POST",
       header: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         filename: fileList[0].name,
-        fileContents: reader.result
-      })
-    }).then(res => {
+        fileContents: reader.result,
+      }),
+    }).then((res) => {
       if (res.status == 200) {
-        res.json().then(json => {
+        res.json().then((json) => {
           populateConfig(json);
         });
       } else {
@@ -105,7 +160,7 @@ function buildJSON() {
       hidden: hidden.checked,
       waitForKey: waitForKey.checked,
       clearBeforeRun: clearBeforeRun.checked,
-      async: async.checked
+      async: async.checked,
     });
   }
 
@@ -124,7 +179,7 @@ function buildJSON() {
       x: parseInt(x.value),
       y: parseInt(y.value),
       height: parseInt(height.value) > 0 ? parseInt(height.value) : 600,
-      width: parseInt(width.value) > 0 ? parseInt(width.value) : 1000
+      width: parseInt(width.value) > 0 ? parseInt(width.value) : 1000,
     });
   }
 
@@ -146,11 +201,11 @@ function buildJSON() {
       userText: "0,150,255,255",
       directoryText: "150,255,150,255",
       primaryText: "220,220,220,255",
-      terminalBG: "30,30,30,255"
+      terminalBG: "30,30,30,255",
     },
     windows: windowArr,
     triggerKeys: keyArr,
-    commands: commandArr
+    commands: commandArr,
   };
   return newClide;
 }
@@ -165,7 +220,7 @@ function saveToFile() {
   downloadLink.download = fileNameToSaveAs;
   downloadLink.innerHTML = "Download File";
   downloadLink.href = textToSaveAsURL;
-  downloadLink.onclick = e => {
+  downloadLink.onclick = (e) => {
     document.body.removeChild(e.target);
   };
   downloadLink.style.display = "none";
@@ -195,43 +250,47 @@ function populateConfig(clide) {
 
   //build window html
   if (clide.windows) {
-    html = `<h2>Windows</h2>`;
-    clide.windows.forEach(window => {
+    let html = "";
+    clide.windows.forEach((window) => {
       html += `<div class="clideWindow">
+        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <div>
           <label for="windowName">Name</label>
           <input type="text" class="windowName" value="${window.name}" />
-          <label for="x">x</label>
-          <input type="number" class="x" value="${window.x}" />
-          <label for="y">y</label>
-          <input type="number" class="y" value="${window.y}" />
+        </div>
+        <div>
+          <label for="x">X Position</label>
+          <input type="number" class="x number" value="${window.x}" />
+        </div>
+        <div>
+          <label for="y">Y Position</label>
+          <input type="number" class="y number" value="${window.y}" />
+        </div>
+        <div>
           <label for="height">Vertical Resolution</label>
-          <input type="number" class="height" value="${window.height}" />
+          <input type="number" class="height number" value="${window.height}" />
+        </div>
+        <div>
           <label for="width">Horizontal Resolution</label>
-          <input type="number" class="width" value="${window.width}" /></div >`;
+          <input type="number" class="width number" value="${window.width}" /></div></div >`;
     });
-    html += `<button>Add a window</button>
-        <button>Arrange Windows</button>`;
     windowContainer.innerHTML = html;
   }
 
   //add trigger keys to span
   if (clide.triggerKeys) {
     keyText = "";
-    clide.triggerKeys.forEach(key => {
+    clide.triggerKeys.forEach((key) => {
       keyText += key + " ";
     });
     keyList.innerText = keyText;
   }
 
-  cmdHTML = `<h1>Command Configuration</h1>`;
-  clide.commands.forEach(command => {
+  cmdHTML = `<h1>Command Configuration</h1><button class="addCommand" onclick="addNewCommand()">Add Commmand</button>`;
+  clide.commands.forEach((command) => {
     cmdHTML += `<div class="command">
-        <label for="cmd">Command</label><input type="text" class="cmd" value="${
-          command.cmd
-        }" />
-        <label for="typed">Typed</label><input type="checkbox" class="typed" ${
-          command.typed ? "checked" : ""
-        } />
+        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <input type="text" class="cmd" value="${command.cmd}" />
         <label for="window">Window</label><input type="text" class="window" value="${
           command.window
         }" />
@@ -247,10 +306,14 @@ function populateConfig(clide) {
         ><input type="number" class="timeout" placeholder="500" value="${
           command.timeout
         }" />
+        <div>
+        <label for="typed">Typed</label><input type="checkbox" class="typed" ${
+          command.typed ? "checked" : ""
+        } />
         <label for="hidden">Hidden</label><input type="checkbox" class="hidden" ${
           command.hidden ? "checked" : ""
         } />
-        <label for="waitForKey">Wait For Key Press</label
+        <label for="waitForKey">Wait for key press</label
         ><input type="checkbox" class="waitForKey" ${
           command.waitForKey ? "checked" : ""
         } />
@@ -261,7 +324,7 @@ function populateConfig(clide) {
         <label for="async">Asynchronous</label
         ><input type="checkbox" class="async" ${
           command.async ? "checked" : ""
-        } />
+        } /></div>
       </div>`;
   });
 
@@ -275,7 +338,7 @@ function byteToHex(byteString) {
     split.pop();
   }
   hex = "#";
-  split.forEach(byte => {
+  split.forEach((byte) => {
     num = parseInt(byte);
     if (byte == 0) {
       hex += "0" + parseInt(byte).toString(16);
@@ -292,9 +355,9 @@ function hexToByte(hexString) {
   split = [
     hexString.substring(1, 3),
     hexString.substring(3, 5),
-    hexString.substring(5, 7)
+    hexString.substring(5, 7),
   ];
-  split.forEach(hex => {
+  split.forEach((hex) => {
     bytes.push(parseInt(hex, 16));
   });
   return bytes.join(",") + ",255";
@@ -304,11 +367,11 @@ function runDemo() {
   fetch("http://localhost:8080/run", {
     method: "POST",
     header: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       filename: "",
-      fileContents: JSON.stringify(buildJSON(), null, 4)
-    })
+      fileContents: JSON.stringify(buildJSON(), null, 4),
+    }),
   });
 }

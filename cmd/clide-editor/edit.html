@@ -7,6 +7,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="edit.css" />
   </head>
   <body>
     <header>
@@ -26,46 +27,75 @@
       <button id="run">Run Demo</button>
     </div>
     <div id="global">
-      <h1>Global Configuration</h1>
-      <label for="user">User</label
-      ><input type="text" id="user" placeholder="username" />
-      <label for="directory">Directory</label>
-      <input type="text" id="directory" placeholder="directory" />
-      <label for="typespeed">Type Speed</label>
-      <input type="number" id="typespeed" placeholder="100" />
-      <label for="humanize">Random Humanization Ratio</label>
-      <input type="number" id="humanize" placeholder="0.5" />
-      <label for="hideWarnings">Hide Warnings</label
-      ><input type="checkbox" id="hideWarnings" />
-      <label for="clearBeforeAll">Clear window before all commands</label
-      ><input type="checkbox" id="clearBeforeAll" />
-      <label for="keyTriggerAll">Trigger all commands with key press</label
-      ><input type="checkbox" id="keyTriggerAll" />
-      <label for="fontPath">Path to font file</label>
-      <input type="text" id="fontPath" />
-      <label for="fontSize">Font Size</label>
-      <input type="number" id="fontSize" placeholder="24" />
-      <div id="windowContainer">
-        <h2>Windows</h2>
-        <div class="clideWindow">
-          <label for="windowName">Name</label>
-          <input type="text" class="windowName" />
-          <label for="x">x</label>
-          <input type="number" class="x" placeholder="0" />
-          <label for="y">y</label>
-          <input type="number" class="y" placeholder="0" />
-          <label for="height">Vertical Resolution</label>
-          <input type="number" class="height" placeholder="600" />
-          <label for="width">Horizontal Resolution</label>
-          <input type="number" class="width" placeholder="800" />
+      <div>
+        <h1>Global Configuration</h1>
+        <div>
+          <label for="user">User</label
+          ><input type="text" id="user" placeholder="username" />
+
+          <label for="directory">Directory</label>
+          <input type="text" id="directory" placeholder="directory" />
+
+          <label for="typespeed">Type Speed</label>
+          <input
+            type="number"
+            id="typespeed"
+            class="number"
+            placeholder="100"
+          />
+          <label for="humanize">Random Humanization Ratio</label>
+          <input type="number" id="humanize" class="number" placeholder="0.5" />
         </div>
-        <button>Add a window</button>
-        <button>Arrange Windows</button>
+        <div>
+          <label for="fontPath">Path to font file</label>
+          <input type="text" id="fontPath" />
+          <label for="fontSize">Font Size</label>
+          <input type="number" id="fontSize" class="number" placeholder="24" />
+        </div>
+        <div class="checkboxes">
+          <label for="hideWarnings">Hide Warnings</label
+          ><input type="checkbox" id="hideWarnings" />
+          <label for="clearBeforeAll">Clear window before all commands</label
+          ><input type="checkbox" id="clearBeforeAll" />
+          <label for="keyTriggerAll">Trigger all commands with key press</label
+          ><input type="checkbox" id="keyTriggerAll" />
+        </div>
+
+        <h2>Windows</h2>
+        <div id="windowContainer">
+          <div class="clideWindow">
+            <button class="removeButton" onclick="removeElement(this)">
+              X
+            </button>
+            <div>
+              <label for="windowName">Name</label>
+              <input type="text" class="windowName" />
+            </div>
+            <div>
+              <label for="x">X Position</label>
+              <input type="number" class="x number" placeholder="0" />
+            </div>
+            <div>
+              <label for="y">Y Position</label>
+              <input type="number" class="y number" placeholder="0" />
+            </div>
+            <div>
+              <label for="height">Vertical Resolution</label>
+              <input type="number" class="height number" placeholder="600" />
+            </div>
+            <div>
+              <label for="width">Horizontal Resolution</label>
+              <input type="number" class="width number" placeholder="800" />
+            </div>
+          </div>
+        </div>
+        <button id="addWindow">Add a window</button>
+        <button id="arrangeWindows">Arrange Windows</button>
       </div>
       <div id="triggerKeys">
         <h2>Trigger Keys</h2>
-        <span id="keyList"></span>
-        <button>Record Keypress</button>
+        <span id="keyList">Space Right Some Other Keys</span>
+        <button id="recordKey">Record Keypress</button>
       </div>
       <div id="colors">
         <h2>Color Scheme</h2>
@@ -79,13 +109,15 @@
         <input type="color" id="directoryColor" />
         <div id="colorPreview">
           <span id="userPreview">demo@clide</span
-          ><span class="primaryText">:</span><span id="directoryPreview">/</span
+          ><span class="primaryText">:</span
+          ><span id="directoryPreview">/home </span
           ><span class="primaryText">$ echo Hello World!</span>
         </div>
       </div>
     </div>
     <div id="commands">
       <h1>Command Configuration</h1>
+      <button class="addCommand" onclick="addNewCommand()">Add Command</button>
     </div>
     <script src="edit.js"></script>
   </body>

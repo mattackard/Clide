@@ -109,31 +109,3 @@ form label {
   overflow: visible;
   font-size: 1rem;
 }
-
-#global {
-  width: 80%;
-  margin: 3rem 10% 0;
-  padding: 4rem;
-  background-color: orangered;
-}
-
-#global input,
-.command input {
-  margin: 1rem;
-}
-
-#global label,
-.command label {
-  margin-left: 5rem;
-}
-
-#commands {
-  width: 80%;
-  margin: 0 10%;
-}
-
-.command {
-  padding: 2rem;
-  background-color: lightblue;
-  margin: 2rem 0;
-}

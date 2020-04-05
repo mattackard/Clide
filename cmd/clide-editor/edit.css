@@ -1,0 +1,133 @@
+/*
+Global
+*/
+
+#global {
+  width: 80%;
+  margin: 3rem 10% 0;
+  padding: 4rem;
+  background-color: rgb(255, 91, 31);
+}
+
+#global input,
+.command input {
+  margin: 1rem;
+}
+
+#global h1 {
+  margin-bottom: 3rem;
+}
+
+#global h2 {
+  margin: 2rem 0 1rem;
+  text-decoration: underline;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.number {
+  width: 4rem;
+}
+
+label {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  font-weight: bold;
+}
+
+button {
+  background-color: lightblue;
+  border: 1px solid black;
+  padding: 0.8rem 2rem;
+  margin-right: 1rem;
+  font-weight: bold;
+  color: black;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.checkboxes label {
+  margin-left: 4rem;
+}
+
+#windowContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.clideWindow {
+  position: relative;
+  width: 32%;
+  margin: 1rem 1rem 1rem 0;
+  padding: 1rem;
+  border: 1px solid black;
+  background-color: lightblue;
+}
+
+.removeButton {
+  position: absolute;
+  top: 0;
+  right: -1rem;
+  border: none;
+  font-size: 1.5rem;
+}
+
+#triggerKeys span {
+  display: block;
+  margin: 2rem;
+}
+
+#colors input {
+  border: 2px solid lightblue;
+  height: 3rem;
+}
+
+#colorPreview {
+  padding: 2rem;
+  background-color: white;
+  width: 50%;
+}
+
+/*
+Commands
+*/
+
+#commands {
+  width: 80%;
+  margin: 0 10%;
+}
+
+#commands h1 {
+  margin: 2rem 0;
+}
+
+.command {
+  position: relative;
+  padding: 6rem 4rem 2rem;
+  background-color: lightblue;
+  margin: 2rem 0;
+}
+
+.cmd {
+  position: absolute;
+  width: 94%;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+  background-color: lightblue;
+  font-size: 2rem;
+  font-weight: bold;
+  border: none;
+}
+
+.cmd:focus,
+.cmd:hover {
+  background-color: rgb(204, 227, 235);
+}
