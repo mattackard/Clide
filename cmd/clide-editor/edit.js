@@ -42,8 +42,27 @@ document.addEventListener("DOMContentLoaded", () => {
   getFiles();
 });
 
+//saves the json contents every time an element loses focus
+document.addEventListener("focusout", () => {
+  fetch("http://localhost:8080/save", {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonText: JSON.stringify(buildJSON()),
+    }),
+  }).then((res) => {
+    if (res.status != 200) {
+      console.log("server error converting file to json");
+    }
+  });
+});
+
 addWindow.addEventListener("click", () => {
-  windowContainer.innerHTML += `<div class="clideWindow">
+  windowContainer.insertAdjacentHTML(
+    "beforeend",
+    `<div class="clideWindow">
         <button class="removeButton" onclick="removeElement(this)">X</button>
         <div>
           <label for="windowName">Name</label>
@@ -63,7 +82,13 @@ addWindow.addEventListener("click", () => {
         </div>
         <div>
           <label for="width">Horizontal Resolution</label>
-          <input type="number" class="width number" value="1000" /></div>`;
+          <input type="number" class="width number" value="1000" /></div>`
+  );
+});
+
+recordKey.addEventListener("click", () => {
+  recordKey.innerText = "Press a key";
+  document.addEventListener("keydown", listenForOneKey);
 });
 
 colorArr.forEach((color) => {
@@ -88,7 +113,9 @@ colorArr.forEach((color) => {
 });
 
 function addNewCommand() {
-  commands.innerHTML += `<div class="command">
+  commands.insertAdjacentHTML(
+    "beforeend",
+    `<div class="command">
         <button class="removeButton" onclick="removeElement(this)">X</button>
         <input type="text" class="cmd" value="New Command" />
         <label for="window">Window</label><input type="text" class="window"/>
@@ -106,7 +133,8 @@ function addNewCommand() {
         <label for="clearBeforeRun">Clear window before execution</label
         ><input type="checkbox" class="clearBeforeRun" />
         <label for="async">Asynchronous</label
-        ><input type="checkbox" class="async"/></div>`;
+        ><input type="checkbox" class="async"/></div>`
+  );
 }
 
 function removeElement(element) {
@@ -207,7 +235,11 @@ function buildJSON() {
   }
 
   //create an array of key strings
-  let keyArr = keyList.innerText.split(" ");
+
+  let keyArr = [];
+  keyList.childNodes.forEach((key) => {
+    keyArr.push(key.innerText.substring(0, key.innerText.length - 1));
+  });
 
   //create a new clide demo json and populate with all form fields
   let newClide = {
@@ -233,8 +265,9 @@ function buildJSON() {
   return newClide;
 }
 
+//saveToFile saves the json file using the browsers default behavior
 function saveToFile() {
-  let textToSave = buildJSON();
+  let textToSave = JSON.stringify(buildJSON(), null, 4);
   let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
   let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
   let fileNameToSaveAs = "clide-demo.json";
@@ -252,6 +285,7 @@ function saveToFile() {
   downloadLink.click();
 }
 
+//populateConfig populates all the input fields in the editor window
 function populateConfig(clide) {
   user.value = clide.user;
   directory.value = clide.directory;
@@ -260,10 +294,11 @@ function populateConfig(clide) {
   hideWarnings.checked = clide.hideWarnings;
   clearBeforeAll.checked = clide.clearBeforeAll;
   keyTriggerAll.checked = clide.keyTriggerAll;
-  fontPath.value = clide.fontPath;
+  fontPath.value = clide.fontPath ? clide.fontPath : "";
   fontSize.value = clide.fontSize;
 
   //apply color values to inputs with hex conversion
+  //set to black and white if no colorscheme is set
   if (clide.colorScheme) {
     let bg = clide.colorScheme.terminalBG
       ? byteToHex(clide.colorScheme.terminalBG)
@@ -290,6 +325,11 @@ function populateConfig(clide) {
       : "#FFFFFF";
     directoryColor.value = dc;
     directoryPreview.style.color = dc;
+  } else {
+    backgroundColor.value = "#000000";
+    primaryColor.value = "#FFFFFF";
+    userColor.value = "#FFFFFF";
+    directoryColor.value = "#FFFFFF";
   }
 
   //build window html
@@ -321,22 +361,25 @@ function populateConfig(clide) {
     windowContainer.innerHTML = html;
   }
 
-  //add trigger keys to span
+  //add trigger keys to list
   if (clide.triggerKeys) {
-    keyText = "";
+    let keyText = "";
     clide.triggerKeys.forEach((key) => {
-      keyText += key + " ";
+      keyText += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this)">
+              X
+            </button></li>`;
     });
-    keyList.innerText = keyText;
+    keyList.innerHTML = keyText;
   }
 
+  //build all command divs
   cmdHTML = `<h1>Command Configuration</h1><button class="addCommand" onclick="addNewCommand()">Add Commmand</button>`;
   clide.commands.forEach((command) => {
     cmdHTML += `<div class="command">
         <button class="removeButton" onclick="removeElement(this)">X</button>
         <input type="text" class="cmd" value="${command.cmd}" />
         <label for="window">Window</label><input type="text" class="window" value="${
-          command.window
+          command.window ? command.window : ""
         }" />
         <label for="predelay">PreDelay</label
         ><input type="number" class="predelay" placeholder="500" value="${
@@ -347,7 +390,7 @@ function populateConfig(clide) {
           command.postdelay
         }" />
         <label for="timeout">Timeout</label
-        ><input type="number" class="timeout" placeholder="500" value="${
+        ><input type="number" class="timeout" placeholder="5" value="${
           command.timeout
         }" />
         <div>
@@ -407,6 +450,7 @@ function hexToByte(hexString) {
   return bytes.join(",") + ",255";
 }
 
+//sends the json data to run with clide
 function runDemo() {
   fetch("http://localhost:8080/run", {
     method: "POST",
@@ -418,4 +462,23 @@ function runDemo() {
       fileContents: JSON.stringify(buildJSON(), null, 4),
     }),
   });
+}
+
+//listens for a single key press and then removes the event listener
+function listenForOneKey(event) {
+  document.removeEventListener(event.type, listenForOneKey);
+  let key = event.key;
+  if (key.startsWith("Arrow")) {
+    key = key.substring(5);
+  } else if (key == " ") {
+    key = "Space";
+  }
+
+  if (key.length == 1) {
+    key = key.toUpperCase();
+  }
+  keyList.innerHTML += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this)">
+        X
+      </button></li>`;
+  recordKey.innerText = "Record Keypress";
 }
