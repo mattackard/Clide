@@ -65,7 +65,7 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
-	w.Navigate("file:///home/kubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/convert.html")
+	w.Navigate("file:///usr/share/clide/editor/convert.html")
 
 	http.HandleFunc("/getFiles", getFiles)
 	http.HandleFunc("/save", saveFiles)
