@@ -1,6 +1,7 @@
 # adds assets used by the program to their install location
 set-env:
 	cp -r assets /usr/share/clide/
+	cp -r cmd/clide-editor /usr/share/clide/editor/
 	cp -r examples /usr/share/clide/
 
 # removes all clide configuration files from /usr filesystem
