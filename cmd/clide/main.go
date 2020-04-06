@@ -17,8 +17,7 @@ import (
 
 const (
 	goroutineMax = 100
-
-	helpText = `Clide CLI Usage:
+	helpText     = `Clide CLI Usage:
 		clide example.json		runs the clide demo stored in example.json
 		clide-editor			opens the clide demo editor GUI interface				
 		clide				shows this help message`
