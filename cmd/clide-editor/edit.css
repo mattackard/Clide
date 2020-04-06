@@ -91,7 +91,9 @@ button:hover {
 
 #colorPreview {
   padding: 2rem;
-  background-color: white;
+  background-color: black;
+  color: white;
+  font-weight: bold;
   width: 50%;
 }
 

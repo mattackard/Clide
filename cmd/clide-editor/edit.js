@@ -15,6 +15,8 @@ const backgroundColor = document.getElementById("backgroundColor");
 const primaryColor = document.getElementById("primaryColor");
 const userColor = document.getElementById("userColor");
 const directoryColor = document.getElementById("directoryColor");
+const colorArr = [backgroundColor, primaryColor, userColor, directoryColor];
+const colorPreview = document.getElementById("colorPreview");
 const userPreview = document.getElementById("userPreview");
 const directoryPreview = document.getElementById("directoryPreview");
 const primaryText = document.getElementsByClassName("primaryText");
@@ -62,6 +64,27 @@ addWindow.addEventListener("click", () => {
         <div>
           <label for="width">Horizontal Resolution</label>
           <input type="number" class="width number" value="1000" /></div>`;
+});
+
+colorArr.forEach((color) => {
+  color.addEventListener("change", (e) => {
+    switch (e.target.id) {
+      case "backgroundColor":
+        colorPreview.style.backgroundColor = e.target.value;
+        break;
+      case "primaryColor":
+        for (let text of primaryText) {
+          text.style.color = e.target.value;
+        }
+        break;
+      case "userColor":
+        userPreview.style.color = e.target.value;
+        break;
+      case "directoryColor":
+        directoryPreview.style.color = e.target.value;
+        break;
+    }
+  });
 });
 
 function addNewCommand() {
@@ -186,7 +209,7 @@ function buildJSON() {
   //create an array of key strings
   let keyArr = keyList.innerText.split(" ");
 
-  //createa new clide demo json and populate with all form fields
+  //create a new clide demo json and populate with all form fields
   let newClide = {
     user: user.value,
     directory: directory.value,
@@ -198,10 +221,10 @@ function buildJSON() {
     fontPath: fontPath.value,
     fontSize: parseInt(fontSize.value),
     colorScheme: {
-      userText: "0,150,255,255",
-      directoryText: "150,255,150,255",
-      primaryText: "220,220,220,255",
-      terminalBG: "30,30,30,255",
+      userText: hexToByte(userColor.value),
+      directoryText: hexToByte(directoryColor.value),
+      primaryText: hexToByte(primaryColor.value),
+      terminalBG: hexToByte(backgroundColor.value),
     },
     windows: windowArr,
     triggerKeys: keyArr,
@@ -242,10 +265,31 @@ function populateConfig(clide) {
 
   //apply color values to inputs with hex conversion
   if (clide.colorScheme) {
-    backgroundColor.value = byteToHex(clide.colorScheme.terminalBG);
-    primaryColor.value = byteToHex(clide.colorScheme.primaryText);
-    userColor.value = byteToHex(clide.colorScheme.userText);
-    directoryColor.value = byteToHex(clide.colorScheme.directoryText);
+    let bg = clide.colorScheme.terminalBG
+      ? byteToHex(clide.colorScheme.terminalBG)
+      : "#000000";
+    backgroundColor.value = bg;
+    colorPreview.style.backgroundColor = bg;
+
+    let pc = clide.colorScheme.primaryText
+      ? byteToHex(clide.colorScheme.primaryText)
+      : "#FFFFFF";
+    primaryColor.value = pc;
+    for (let text of primaryText) {
+      text.style.color = pc;
+    }
+
+    let uc = clide.colorScheme.userText
+      ? byteToHex(clide.colorScheme.userText)
+      : "#FFFFFF";
+    userColor.value = uc;
+    userPreview.style.color = uc;
+
+    let dc = clide.colorScheme.directoryText
+      ? byteToHex(clide.colorScheme.directoryText)
+      : "#FFFFFF";
+    directoryColor.value = dc;
+    directoryPreview.style.color = dc;
   }
 
   //build window html
