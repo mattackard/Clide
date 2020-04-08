@@ -377,7 +377,7 @@ function populateConfig(clide) {
   clide.commands.forEach((command) => {
     cmdHTML += `<div class="command">
         <button class="removeButton" onclick="removeElement(this)">X</button>
-        <input type="text" class="cmd" value="${command.cmd}" />
+        <input type="text" class="cmd" value="${command.cmd.replace(/"/g, '&quot;')}" />
         <label for="window">Window</label><input type="text" class="window" value="${
           command.window ? command.window : ""
         }" />
