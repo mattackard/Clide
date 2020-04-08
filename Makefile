@@ -1,17 +1,17 @@
 # adds assets used by the program to their install location and adds binaries to /usr/bin
 install: builds
-	mkdir /usr/share/clide
-	cp -r assets /usr/share/clide/
-	cp -r cmd/clide-editor /usr/share/clide/editor/
-	cp -r examples /usr/share/clide/
-	cp build/bin/clide /usr/bin/
-	cp build/bin/clide-editor /usr/bin/
+	sudo mkdir /usr/share/clide
+	sudo cp -r assets /usr/share/clide/
+	sudo cp -r cmd/clide-editor /usr/share/clide/editor/
+	sudo cp -r examples /usr/share/clide/
+	sudo cp build/bin/clide /usr/bin/
+	sudo cp build/bin/clide-editor /usr/bin/
 
 # removes all clide configuration files from /usr filesystem and binaries from /usr/bin
 uninstall:
-	rm -r /usr/share/clide
-	rm /usr/bin/clide
-	rm /usr/bin/clide-editor
+	sudo rm -r /usr/share/clide
+	sudo rm /usr/bin/clide
+	sudo rm /usr/bin/clide-editor
 
 # builds clide and clide-editor into binaries
 builds:
@@ -28,8 +28,8 @@ run-demo:
 # creates a package ready to package for a debian distribution
 create-package: builds
 	mkdir -p 					./build/pkg/clide-pkg/usr/share
-	mkdir  						./build/pkg/clide-pkg/usr/bin
-	mkdir						./build/pkg/clide-pkg/DEBIAN
+	mkdir -p					./build/pkg/clide-pkg/usr/bin
+	mkdir -p					./build/pkg/clide-pkg/DEBIAN
 	cp -r assets 				./build/pkg/clide-pkg/usr/share/
 	cp -r examples 				./build/pkg/clide-pkg/usr/share/
 	cp -r cmd/clide-editor 		./build/pkg/clide-pkg/usr/share/
