@@ -44,18 +44,7 @@ The Clide source contains an `examples` folder that contains sample json demos. 
 
 The included `Makefile` has small helper scripts to run and build the project quickly. You can run these by navigating to the root project directory and running make along with the script you want to execute.
 
-`make set-env` is required for running the program from source and sets up the environment with the asset files clide needs to run properly.
-
-```
-# removes all clide configuration files from /usr filesystem
-make rm-env
-
-# builds the go program into a binary
-make builds
-
-# runs demo.json localated in the examples folder in project directory
-make run-demo
-```
+`make install` is required for running the program from source and sets up the environment with the asset files clide needs to run properly. Look into the `Makefile` for more scripts to help in development.
 
 The demo files in the `examples` folder is a good place to start looking at the settings to get familiar with everything clide can do.
 
