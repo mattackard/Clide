@@ -3,6 +3,7 @@ package clide
 import (
 	"bufio"
 	"errors"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -40,13 +41,15 @@ func (cmd Command) Validate() error {
 func (cmd Command) IsInstalled() bool {
 	program := strings.Split(cmd.CmdString, " ")[0]
 	if _, err := exec.LookPath(program); err != nil {
-		return false
+		if program != "cd" {
+			return false
+		}
 	}
 	return true
 }
 
 //Run runs a cli command with options to wait before and after execution
-func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, error) {
+func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, error) {
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
@@ -70,18 +73,24 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 	//parse program from command string
 	split := strings.Split(cmd.CmdString, " ")
 	program := split[0]
-	command := exec.Command(program, split[1:]...)
+
+	var command *exec.Cmd
+	if strings.ContainsAny(cmd.CmdString, "|><") {
+		command = exec.Command("bash", "-e", "-c", cmd.CmdString)
+	} else {
+		command = exec.Command(program, split[1:]...)
+	}
 
 	if cmd.Hidden {
 		err := command.Run()
 		if err != nil {
-			return Typer{}, nil
+			return Typer{}, err
 		}
 	} else if cmd.Async {
 		go func() {
 			//type the command into the console and wait for it to finish typing before further execution
 			var err error
-			typer, err = writeCommand(cmd, cfg, typer)
+			typer, err = writeCommand(cmd, *cfg, typer)
 			if err != nil {
 				panic(err)
 			}
@@ -142,7 +151,7 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 	} else if cmd.Timeout != 0 {
 		//type the command into the console and wait for it to finish typing before further execution
 		var err error
-		typer, err = writeCommand(cmd, cfg, typer)
+		typer, err = writeCommand(cmd, *cfg, typer)
 		if err != nil {
 			panic(err)
 		}
@@ -175,20 +184,34 @@ func (cmd Command) Run(cfg Config, typer Typer, exitChan chan bool) (Typer, erro
 	} else {
 		//type the command into the console and wait for it to finish typing before further execution
 		var err error
-		typer, err = writeCommand(cmd, cfg, typer)
+		typer, err = writeCommand(cmd, *cfg, typer)
 		if err != nil {
 			panic(err)
 		}
 
-		output, err := command.Output()
-		if err != nil {
-			return Typer{}, err
+		//special handling for cd commands
+		if program == "cd" {
+			updateDirectory(cfg, split[1])
+			err := os.Chdir(split[1])
+			if err != nil {
+				typer.Pos.X = 5
+				typer.Pos, err = Print(typer, err.Error(), textColor)
+				if err != nil {
+					return Typer{}, err
+				}
+			}
+		} else {
+			output, err := command.Output()
+			if err != nil {
+				return Typer{}, err
+			}
+			typer.Pos.X = 5
+			typer.Pos, err = Print(typer, string(output), textColor)
+			if err != nil {
+				return Typer{}, err
+			}
 		}
-		typer.Pos.X = 5
-		typer.Pos, err = Print(typer, string(output), textColor)
-		if err != nil {
-			return Typer{}, err
-		}
+
 	}
 	return typer, nil
 }
@@ -230,4 +253,52 @@ func ClearWindow(typer Typer, color sdl.Color) (Typer, error) {
 	}
 
 	return typer, nil
+}
+
+//updateDirectory updates the config directory printed to the prompt for when a cd command is called
+func updateDirectory(cfg *Config, path string) {
+	tempPath := cfg.Directory + path
+
+	//split path by slash to edit relative paths
+	if strings.Contains(tempPath, ".") {
+
+		//keep removing directories if a ../ is present
+		for strings.Contains(tempPath, "..") {
+			tempPath = removeOnePath(tempPath)
+		}
+
+		//ignore all ./ relative paths
+		strings.ReplaceAll(tempPath, "./", "")
+
+		if !strings.HasSuffix(tempPath, "/") {
+			tempPath += "/"
+		}
+		cfg.Directory = tempPath
+
+	} else {
+		if !strings.HasSuffix(tempPath, "/") {
+			path += "/"
+		}
+		cfg.Directory += path
+	}
+}
+
+//removeOnePath removes a single pair of ../ and its preceding directory
+func removeOnePath(path string) string {
+	split := strings.Split(path, "/")
+	for i, dir := range split {
+		if dir == ".." {
+			//overwrite a ../ path and its predecessor with the remaining path
+			copy(split[i-1:], split[i+1:])
+
+			//empty the old indexes
+			split[len(split)-1] = ""
+			split[len(split)-2] = ""
+
+			//remove unused length
+			split = split[:len(split)-2]
+			break
+		}
+	}
+	return strings.Join(split, "/")
 }

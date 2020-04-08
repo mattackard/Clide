@@ -271,7 +271,7 @@ func main() {
 		}
 
 		if cmd.IsInstalled() {
-			typerList[index], err = cmd.Run(cfg, typerList[index], exitChan)
+			typerList[index], err = cmd.Run(&cfg, typerList[index], exitChan)
 			if err != nil {
 				panic(err)
 			}
