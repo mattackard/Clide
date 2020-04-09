@@ -203,7 +203,7 @@ func main() {
 
 	//open a window for each defined in json
 	typerList := []clide.Typer{}
-	for _, w := range cfg.Windows {
+	for i, w := range cfg.Windows {
 		window, err := newWindow(w.Name, clide.Position{
 			X: w.X,
 			Y: w.Y,
@@ -213,6 +213,14 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		//set the window object in the cfg window
+		cfg.Windows[i].Window = window
+
+		if cfg.HideWindows {
+			window.Hide()
+		}
+
 		defer window.Destroy()
 
 		//initialize typer values
@@ -343,5 +351,5 @@ func exit(delay int, exit chan bool) {
 	//used to give time for goroutines to exit
 	time.Sleep(time.Second * time.Duration(delay))
 
-	os.Exit(1)
+	os.Exit(0)
 }

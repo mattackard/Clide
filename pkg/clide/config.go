@@ -18,6 +18,7 @@ type Config struct {
 	HideWarnings   bool      `json:"hideWarnings"`
 	ClearBeforeAll bool      `json:"clearBeforeAll"`
 	KeyTriggerAll  bool      `json:"keyTriggerAll"`
+	HideWindows    bool      `json:"hideWindows"`
 	FontPath       string    `json:"fontPath"`
 	FontSize       int       `json:"fontSize"`
 	Windows        []Window  `json:"windows"`
@@ -50,7 +51,7 @@ func (cfg Config) Validate() (Config, error) {
 	var window *sdl.Window
 	var err error
 
-	// Create a window for us to draw the text on
+	// Create a window to draw the text on
 	if window, err = sdl.CreateWindow("Clide", 0, 0, 600, 600, sdl.WINDOW_SHOWN); err != nil {
 		return Config{}, err
 	}
@@ -140,6 +141,17 @@ func (cfg Config) Validate() (Config, error) {
 		}
 	}
 	return cfg, nil
+}
+
+//getWindow return the sindow object with the specified name
+func (cfg Config) getWindow(name string) *sdl.Window {
+	var targetWindow *sdl.Window
+	for _, win := range cfg.Windows {
+		if win.Name == name {
+			targetWindow = win.Window
+		}
+	}
+	return targetWindow
 }
 
 //StringToColor converts a rgb or rgba formatted string to an sdl.Color struct

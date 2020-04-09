@@ -13,16 +13,18 @@ import (
 
 //Command holds a single clide command
 type Command struct {
-	CmdString      string `json:"cmd"`
-	Typed          bool   `json:"typed"`
-	Window         string `json:"window"`
-	PreDelay       int    `json:"predelay"`
-	PostDelay      int    `json:"postdelay"`
-	Timeout        int    `json:"timeout"`
-	Hidden         bool   `json:"hidden"`
-	WaitForKey     bool   `json:"waitForKey"`
-	ClearBeforeRun bool   `json:"clearBeforeRun"`
-	Async          bool   `json:"async"`
+	CmdString      string   `json:"cmd"`
+	Typed          bool     `json:"typed"`
+	Window         string   `json:"window"`
+	PreDelay       int      `json:"predelay"`
+	PostDelay      int      `json:"postdelay"`
+	Timeout        int      `json:"timeout"`
+	Hidden         bool     `json:"hidden"`
+	WaitForKey     bool     `json:"waitForKey"`
+	ClearBeforeRun bool     `json:"clearBeforeRun"`
+	Async          bool     `json:"async"`
+	HideWindow     bool     `json:"hideWindow"`
+	ResizeWindows  []Window `json:"resizeWindows"`
 }
 
 const defaultTimeout = 10
@@ -50,6 +52,17 @@ func (cmd Command) IsInstalled() bool {
 
 //Run runs a cli command with options to wait before and after execution
 func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, error) {
+
+	//if resize windows is set, get each window and resize it as set
+	if len(cmd.ResizeWindows) > 0 {
+		for _, win := range cmd.ResizeWindows {
+			target := cfg.getWindow(win.Name)
+			target.SetPosition(win.X, win.Y)
+			target.SetSize(win.Width, win.Height)
+		}
+	}
+	typer.Window.Show()
+
 	//clear terminal if set in config or command
 	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
 		var err error
@@ -146,6 +159,12 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 			}
 
 			time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+
+			//hide the window if cmd.HideWindow is set
+			if cmd.HideWindow {
+				typer.Window.Hide()
+			}
+
 			command.Process.Kill()
 		}()
 	} else if cmd.Timeout != 0 {
@@ -213,6 +232,14 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 		}
 
 	}
+
+	if !cmd.Async {
+		//hide the window if cmd.HideWindow is set
+		if cmd.HideWindow {
+			typer.Window.Hide()
+		}
+	}
+
 	return typer, nil
 }
 
