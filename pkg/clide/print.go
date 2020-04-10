@@ -7,59 +7,63 @@ import (
 )
 
 //prompt returns a string used to emulate a terminal prompt
-func printPrompt(cfg Config, typer Typer) (Typer, error) {
+func printPrompt(cfg Config, typer *Typer) error {
 
 	//set colors for user, directory, and primary text
 	userColor, err := StringToColor(cfg.ColorScheme.UserText)
 	directoryColor, err := StringToColor(cfg.ColorScheme.DirectoryText)
 	primaryColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
+	if err != nil {
+		return err
+	}
+
+	lineY := typer.Pos.Y
 
 	//print promt to terminal window
-	pos, err := Print(typer, cfg.User, userColor)
+	err = typer.Print(cfg.User, userColor)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
-	typer.Pos.X += pos.X - 6
-	pos, err = Print(typer, ":", primaryColor)
+	typer.Pos.Y = lineY
+	err = typer.Print(":", primaryColor)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
-	typer.Pos.X += pos.X - 6
-	pos, err = Print(typer, cfg.Directory, directoryColor)
+	typer.Pos.Y = lineY
+	err = typer.Print(cfg.Directory, directoryColor)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
-	typer.Pos.X += pos.X - 6
-	pos, err = Print(typer, "$ ", primaryColor)
+	typer.Pos.Y = lineY
+	err = typer.Print("$ ", primaryColor)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
-	typer.Pos.X += pos.X - 6
-	return typer, nil
+	typer.Pos.Y = lineY
+	return nil
 }
 
 //writeCommand prints out the given command and emulates a terminal prompt before it
-func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
+func writeCommand(cmd Command, cfg Config, typer *Typer) error {
 
 	//print terminal prompt
 	typer.Pos.X = 5
-	typer, err := printPrompt(cfg, typer)
+	err := printPrompt(cfg, typer)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
 
 	if cmd.WaitForKey || cfg.KeyTriggerAll {
 		if len(cfg.TiggerKeys) == 0 {
-			pos, err := Print(typer, "WaitForKey or KeyTriggerAll is set, but no TriggerKeys are defined!", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			err := typer.Print("WaitForKey or KeyTriggerAll is set, but no TriggerKeys are defined!", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			if err != nil {
-				return Typer{}, err
+				return err
 			}
 
-			typer.Pos.Y = pos.Y
 			typer.Pos.X = 5
-			typer, err = printPrompt(cfg, typer)
+			err = printPrompt(cfg, typer)
 			if err != nil {
-				return Typer{}, err
+				return err
 			}
 		} else {
 			ListenForKey(cfg)
@@ -71,19 +75,19 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 
 	primaryColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
 
 	//type of print command to window
 	if cmd.Typed {
-		typer.Pos, err = Type(typer, cmd.CmdString, primaryColor)
+		err = typer.Type(cmd.CmdString, primaryColor)
 		if err != nil {
-			return Typer{}, err
+			return err
 		}
 	} else {
-		typer.Pos, err = Print(typer, cmd.CmdString, primaryColor)
+		err = typer.Print(cmd.CmdString, primaryColor)
 		if err != nil {
-			return Typer{}, err
+			return err
 		}
 	}
 
@@ -96,5 +100,5 @@ func writeCommand(cmd Command, cfg Config, typer Typer) (Typer, error) {
 		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
 	}
 
-	return typer, nil
+	return nil
 }

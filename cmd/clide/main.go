@@ -77,20 +77,20 @@ func main() {
 		}
 
 		fmt.Println("You must provide a clide configured json file to run a demo.")
-		typer.Pos, err = clide.Print(typer, "You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 100, B: 100, A: 255})
+		err = typer.Print("You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println("\n" + helpText)
 		typer.Pos.X = 20
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, helpText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
+		err = typer.Print(helpText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
 		typer.Pos.X = 5
 		typer.Pos.Y += 20
-		typer.Pos, err = clide.Print(typer, "Exiting in 10 seconds", sdl.Color{R: 255, G: 100, B: 100, A: 255})
+		err = typer.Print("Exiting in 10 seconds", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
@@ -136,7 +136,7 @@ func main() {
 
 		errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide/examples/", os.Args[1])
 		log.Println(errorText)
-		typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
+		err = typer.Print(errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			panic(err)
 		}
@@ -147,7 +147,7 @@ func main() {
 			errorText = fmt.Sprintf("File %s does not exists /usr/share/clide/examples/. Checking for clide examples on the web with name %s ...", os.Args[1], os.Args[1])
 			log.Println(errorText)
 			typer.Pos.X = 5
-			typer.Pos, err = clide.Print(typer, errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
+			err = typer.Print(errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 			if err != nil {
 				panic(err)
 			}
@@ -157,7 +157,7 @@ func main() {
 			if err != nil || resp.StatusCode != 200 {
 				log.Println("Could not find file at mattackard.github.io/Clide/demos")
 				typer.Pos.X = 5
-				typer.Pos, err = clide.Print(typer, "Could not find file at mattackard.github.io/Clide/demos", sdl.Color{R: 255, G: 100, B: 100, A: 255})
+				err = typer.Print("Could not find file at mattackard.github.io/Clide/demos", sdl.Color{R: 255, G: 100, B: 100, A: 255})
 				if err != nil {
 					panic(err)
 				}
@@ -202,7 +202,7 @@ func main() {
 	}
 
 	//open a window for each defined in json
-	typerList := []clide.Typer{}
+	typerList := []*clide.Typer{}
 	for i, w := range cfg.Windows {
 		window, err := newWindow(w.Name, clide.Position{
 			X: w.X,
@@ -245,12 +245,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		typer, err = clide.ClearWindow(typer, bgColor)
+		err = typer.ClearWindow(bgColor)
 		if err != nil {
 			panic(err)
 		}
 
-		typerList = append(typerList, typer)
+		typerList = append(typerList, &typer)
 	}
 
 	//listen for quit events to close program
@@ -275,18 +275,18 @@ func main() {
 
 		err := cmd.Validate()
 		if err != nil {
-			clide.Print(typerList[index], err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			typerList[index].Print(err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		}
 
 		if cmd.IsInstalled() {
-			typerList[index], err = cmd.Run(&cfg, typerList[index], exitChan)
+			err = cmd.Run(&cfg, typerList[index], exitChan)
 			if err != nil {
 				panic(err)
 			}
 		} else {
 			if !cfg.HideWarnings {
 				warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
-				typerList[index].Pos, err = clide.Print(typerList[index], warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+				err = typerList[index].Print(warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 				if err != nil {
 					panic(err)
 				}

@@ -3,6 +3,7 @@ package clide
 import (
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -16,6 +17,7 @@ type Typer struct {
 	Font     Font
 	Speed    int
 	Humanize float64
+	mutex    sync.Mutex
 }
 
 // Position holds the positional data of a sdl2 surface
@@ -34,7 +36,7 @@ type Font struct {
 
 // Type prints the text to a sdl2 window and simulates a user typing the string
 // it returns a position struct describing the completed surface
-func Type(typer Typer, text string, color sdl.Color) (Position, error) {
+func (typer *Typer) Type(text string, color sdl.Color) error {
 	//split string into array of cingle characters
 	split := strings.Split(text, "")
 
@@ -43,19 +45,17 @@ func Type(typer Typer, text string, color sdl.Color) (Position, error) {
 	var textsurface *sdl.Surface
 
 	var err error
-	var lastX int32
-	var lastY int32
-	lastX = typer.Pos.X
-	lastY = typer.Pos.Y
+	lastX := typer.Pos.X
+	lastY := typer.Pos.Y
 
 	//get surface info
 	if surface, err = typer.Window.GetSurface(); err != nil {
-		return Position{}, err
+		return err
 	}
 
 	// Load the font for our text
 	if font, err = ttf.OpenFont(typer.Font.Path, typer.Font.Size); err != nil {
-		return Position{}, err
+		return err
 	}
 	defer font.Close()
 
@@ -65,13 +65,13 @@ func Type(typer Typer, text string, color sdl.Color) (Position, error) {
 
 		// Load the font for our text
 		if font, err = ttf.OpenFont(typer.Font.Path, typer.Font.Size); err != nil {
-			return Position{}, err
+			return err
 		}
 		defer font.Close()
 
 		// Create text using font
 		if textsurface, err = font.RenderUTF8Blended(char, color); err != nil {
-			return Position{}, err
+			return err
 		}
 		defer textsurface.Free()
 
@@ -84,7 +84,7 @@ func Type(typer Typer, text string, color sdl.Color) (Position, error) {
 		// Dont print newline characters
 		if []byte(char)[0] != []byte("\n")[0] {
 			if err := textsurface.Blit(nil, surface, &sdl.Rect{X: lastX, Y: lastY, W: 0, H: 0}); err != nil {
-				return Position{}, err
+				return err
 			}
 
 			lastX += textsurface.W
@@ -97,16 +97,17 @@ func Type(typer Typer, text string, color sdl.Color) (Position, error) {
 	lastY += textsurface.H + 2
 
 	//return position for next line to be typed from
-	return Position{
+	typer.Pos = Position{
 		X: lastX,
 		Y: lastY,
 		W: surface.W,
 		H: surface.H,
-	}, nil
+	}
+	return nil
 }
 
 // Print prints text to the sdl2 window all at once
-func Print(typer Typer, text string, color sdl.Color) (Position, error) {
+func (typer *Typer) Print(text string, color sdl.Color) error {
 	split := strings.Split(text, "\n")
 
 	var surface *sdl.Surface
@@ -118,12 +119,12 @@ func Print(typer Typer, text string, color sdl.Color) (Position, error) {
 	lastY = typer.Pos.Y
 
 	if surface, err = typer.Window.GetSurface(); err != nil {
-		return Position{}, err
+		return err
 	}
 
 	// Load the font for our text
 	if font, err = ttf.OpenFont(typer.Font.Path, typer.Font.Size); err != nil {
-		return Position{}, err
+		return err
 	}
 	defer font.Close()
 
@@ -132,12 +133,12 @@ func Print(typer Typer, text string, color sdl.Color) (Position, error) {
 		if len(line) > 0 {
 			// Create text using font
 			if textsurface, err = font.RenderUTF8Blended(line, color); err != nil {
-				return Position{}, err
+				return err
 			}
 			defer textsurface.Free()
 
 			if err := textsurface.Blit(nil, surface, &sdl.Rect{X: typer.Pos.X, Y: lastY, W: 0, H: 0}); err != nil {
-				return Position{}, err
+				return err
 			}
 			lastY += textsurface.H + 2
 		}
@@ -152,21 +153,23 @@ func Print(typer Typer, text string, color sdl.Color) (Position, error) {
 	//in case textSurface was never defined
 	if textsurface == nil {
 		//return position for next line to be typed from
-		return Position{
+		typer.Pos = Position{
 			X: 5,
 			Y: lastY,
 			W: surface.W,
 			H: surface.H,
-		}, nil
+		}
+		return nil
 	}
 
 	//return position for next line to be typed from
-	return Position{
-		X: textsurface.W + 7,
+	typer.Pos = Position{
+		X: typer.Pos.X + textsurface.W + 1,
 		Y: lastY,
 		W: surface.W,
 		H: surface.H,
-	}, nil
+	}
+	return nil
 }
 
 // ListenForKey blocks execution until a key is pressed.

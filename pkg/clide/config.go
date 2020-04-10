@@ -95,7 +95,7 @@ func (cfg Config) Validate() (Config, error) {
 
 	//throw error when no commands are present
 	if len(cfg.Commands) == 0 {
-		Print(typer, "No commands found in provided json file", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+		typer.Print("No commands found in provided json file", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		return cfg, errors.New("No commands found in provided json file")
 	}
 
@@ -134,9 +134,9 @@ func (cfg Config) Validate() (Config, error) {
 
 		//comfirm user wants to run program even though uninstalled commands will be skipped
 		if len(notInstalled) != 0 {
-			Print(typer, "WARNING: At least one command is not installed on the system! The following commands will be skipped:", sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			typer.Print("WARNING: At least one command is not installed on the system! The following commands will be skipped:", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			for _, badCmd := range notInstalled {
-				Print(typer, badCmd, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+				typer.Print(badCmd, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			}
 		}
 	}

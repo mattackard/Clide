@@ -51,7 +51,7 @@ func (cmd Command) IsInstalled() bool {
 }
 
 //Run runs a cli command with options to wait before and after execution
-func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, error) {
+func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 
 	//if resize windows is set, get each window and resize it as set
 	if len(cmd.ResizeWindows) > 0 {
@@ -68,19 +68,19 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 		var err error
 		bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
 		if err != nil {
-			return typer, err
+			return err
 		}
 
-		typer, err = ClearWindow(typer, bgColor)
+		err = typer.ClearWindow(bgColor)
 		if err != nil {
-			return typer, err
+			return err
 		}
 	}
 
 	//get text color
 	textColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
 	if err != nil {
-		return Typer{}, err
+		return err
 	}
 
 	//parse program from command string
@@ -97,13 +97,13 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 	if cmd.Hidden {
 		err := command.Run()
 		if err != nil {
-			return Typer{}, err
+			return err
 		}
 	} else if cmd.Async {
 		go func() {
 			//type the command into the console and wait for it to finish typing before further execution
 			var err error
-			typer, err = writeCommand(cmd, *cfg, typer)
+			err = writeCommand(cmd, *cfg, typer)
 			if err != nil {
 				panic(err)
 			}
@@ -134,22 +134,26 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 				}
 			}()
 
-			//stream the output from the command in realtime
-			//won't block so the sleep timer can run while printing
-			go func() {
-				outputScanner := bufio.NewScanner(output)
-				for outputScanner.Scan() {
-					line := outputScanner.Text()
-					typer.Pos.X = 5
-					typer.Pos, err = Print(typer, line, textColor)
-				}
-			}()
+			// stream the output from the command in realtime
+			// won't block so the sleep timer can run while printing
 			go func() {
 				errScanner := bufio.NewScanner(errOutput)
 				for errScanner.Scan() {
+					typer.mutex.Lock()
 					line := errScanner.Text()
 					typer.Pos.X = 5
-					typer.Pos, err = Print(typer, line, textColor)
+					err = typer.Print(line, textColor)
+					typer.mutex.Unlock()
+				}
+			}()
+			go func() {
+				outputScanner := bufio.NewScanner(output)
+				for outputScanner.Scan() {
+					typer.mutex.Lock()
+					line := outputScanner.Text()
+					typer.Pos.X = 5
+					err = typer.Print(line, textColor)
+					typer.mutex.Unlock()
 				}
 			}()
 
@@ -166,44 +170,69 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 			}
 
 			command.Process.Kill()
+
+			//give any error messages some time to print to the window
+			time.Sleep(time.Millisecond * 10)
 		}()
 	} else if cmd.Timeout != 0 {
 		//type the command into the console and wait for it to finish typing before further execution
 		var err error
-		typer, err = writeCommand(cmd, *cfg, typer)
+		err = writeCommand(cmd, *cfg, typer)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		//set up a stdout pipe to capture the output
+		//set up a stdout and stderr pipe to capture the output
 		output, err := command.StdoutPipe()
 		if err != nil {
-			return Typer{}, nil
+			return err
+		}
+		errOutput, err := command.StderrPipe()
+		if err != nil {
+			return err
 		}
 
 		//dont wait for command to finish
 		err = command.Start()
 		if err != nil {
-			return Typer{}, err
+			return err
 		}
 
 		//stream the output from the command in realtime
 		//won't block so the sleep timer can run while printing
 		go func() {
 			scanner := bufio.NewScanner(output)
+
 			for scanner.Scan() {
+				typer.mutex.Lock()
 				line := scanner.Text()
 				typer.Pos.X = 5
-				typer.Pos, err = Print(typer, line, textColor)
+				err = typer.Print(line, textColor)
+				typer.mutex.Unlock()
+
+			}
+		}()
+		go func() {
+			errScanner := bufio.NewScanner(errOutput)
+
+			for errScanner.Scan() {
+				typer.mutex.Lock()
+				line := errScanner.Text()
+				typer.Pos.X = 5
+				err = typer.Print(line, textColor)
+				typer.mutex.Unlock()
 			}
 		}()
 
 		time.Sleep(time.Duration(cmd.Timeout) * time.Second)
 		command.Process.Kill()
+
+		//give any error messages some time to print to the window
+		time.Sleep(time.Millisecond * 10)
 	} else {
 		//type the command into the console and wait for it to finish typing before further execution
 		var err error
-		typer, err = writeCommand(cmd, *cfg, typer)
+		err = writeCommand(cmd, *cfg, typer)
 		if err != nil {
 			panic(err)
 		}
@@ -214,20 +243,20 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 			err := os.Chdir(split[1])
 			if err != nil {
 				typer.Pos.X = 5
-				typer.Pos, err = Print(typer, err.Error(), textColor)
+				err = typer.Print(err.Error(), textColor)
 				if err != nil {
-					return Typer{}, err
+					return err
 				}
 			}
 		} else {
-			output, err := command.Output()
+			output, err := command.CombinedOutput()
 			if err != nil {
-				return Typer{}, err
+				return err
 			}
 			typer.Pos.X = 5
-			typer.Pos, err = Print(typer, string(output), textColor)
+			err = typer.Print(string(output), textColor)
 			if err != nil {
-				return Typer{}, err
+				return err
 			}
 		}
 
@@ -240,17 +269,17 @@ func (cmd Command) Run(cfg *Config, typer Typer, exitChan chan bool) (Typer, err
 		}
 	}
 
-	return typer, nil
+	return nil
 }
 
 // ClearWindow removes all content on the window specified in typer
-func ClearWindow(typer Typer, color sdl.Color) (Typer, error) {
+func (typer *Typer) ClearWindow(color sdl.Color) error {
 	var surface *sdl.Surface
 	var err error
 
 	//get surface info
 	if surface, err = typer.Window.GetSurface(); err != nil {
-		return typer, err
+		return err
 	}
 
 	//create a rectangle that fills the screen and make it black
@@ -279,11 +308,15 @@ func ClearWindow(typer Typer, color sdl.Color) (Typer, error) {
 		W: 0,
 	}
 
-	return typer, nil
+	return nil
 }
 
 //updateDirectory updates the config directory printed to the prompt for when a cd command is called
 func updateDirectory(cfg *Config, path string) {
+	if !strings.HasSuffix(cfg.Directory, "/") {
+		cfg.Directory += "/"
+	}
+
 	tempPath := cfg.Directory + path
 
 	//split path by slash to edit relative paths
