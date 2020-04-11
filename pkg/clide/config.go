@@ -25,6 +25,7 @@ type Config struct {
 	TiggerKeys     []string  `json:"triggerKeys"`
 	ColorScheme    Colors    `json:"colorScheme"`
 	Commands       []Command `json:"commands"`
+	TyperList      []*Typer
 }
 
 // Window holds data for a window created in sdl
@@ -194,4 +195,21 @@ func StringToColor(color string) (sdl.Color, error) {
 	}
 
 	return sdlColor, nil
+}
+
+//ClearAllWindows clears all existing windows by referencing all Window objects linked to Typer in cfg.TyperList
+func (cfg Config) ClearAllWindows() error {
+	bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
+	if err != nil {
+		return err
+	}
+
+	for _, typer := range cfg.TyperList {
+		err = typer.ClearWindow(bgColor)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

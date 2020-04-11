@@ -56,9 +56,13 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 	//if resize windows is set, get each window and resize it as set
 	if len(cmd.ResizeWindows) > 0 {
 		for _, win := range cmd.ResizeWindows {
+			win.Window.Hide()
+
 			target := cfg.getWindow(win.Name)
 			target.SetPosition(win.X, win.Y)
 			target.SetSize(win.Width, win.Height)
+
+			cfg.ClearAllWindows()
 		}
 	}
 	typer.Window.Show()

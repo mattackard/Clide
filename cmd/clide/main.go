@@ -253,6 +253,8 @@ func main() {
 		typerList = append(typerList, &typer)
 	}
 
+	cfg.TyperList = typerList
+
 	//listen for quit events to close program
 	go listenForQuit(exitChan)
 
@@ -266,7 +268,7 @@ func main() {
 		//find the typer for the window specified in cmd
 		index := 0
 		if cmd.Window != "" {
-			for i, v := range typerList {
+			for i, v := range cfg.TyperList {
 				if v.Window.GetTitle() == cmd.Window {
 					index = i
 				}
@@ -275,18 +277,18 @@ func main() {
 
 		err := cmd.Validate()
 		if err != nil {
-			typerList[index].Print(err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
+			cfg.TyperList[index].Print(err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
 		}
 
 		if cmd.IsInstalled() {
-			err = cmd.Run(&cfg, typerList[index], exitChan)
+			err = cmd.Run(&cfg, cfg.TyperList[index], exitChan)
 			if err != nil {
 				panic(err)
 			}
 		} else {
 			if !cfg.HideWarnings {
 				warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
-				err = typerList[index].Print(warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
+				err = cfg.TyperList[index].Print(warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 				if err != nil {
 					panic(err)
 				}
