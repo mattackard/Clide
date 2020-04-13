@@ -282,7 +282,13 @@ func (typer *Typer) ClearWindow(color sdl.Color) error {
 	var err error
 
 	//get surface info
-	if surface, err = typer.Window.GetSurface(); err != nil {
+	surface, err = typer.Window.GetSurface()
+	if err != nil {
+		return err
+	}
+
+	err = surface.Blit(nil, surface, &sdl.Rect{X: 0, Y: -typer.Pos.Y, W: 0, H: 0})
+	if err != nil {
 		return err
 	}
 
