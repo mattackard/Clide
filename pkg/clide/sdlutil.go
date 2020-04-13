@@ -42,7 +42,7 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 
 	var surface *sdl.Surface
 	var font *ttf.Font
-	var textsurface *sdl.Surface
+	var textSurface *sdl.Surface
 
 	var err error
 	lastX := typer.Pos.X
@@ -70,31 +70,41 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 		defer font.Close()
 
 		// Create text using font
-		if textsurface, err = font.RenderUTF8Blended(char, color); err != nil {
+		if textSurface, err = font.RenderUTF8Blended(char, color); err != nil {
 			return err
 		}
-		defer textsurface.Free()
+		defer textSurface.Free()
 
 		// Wrap text if it's too long
 		if lastX > surface.W-15 || []byte(char)[0] == []byte("\n")[0] {
 			lastX = 5
-			lastY += textsurface.H + 2
+			if lastY+textSurface.H+2 > surface.H {
+				scrollBottom(surface, textSurface)
+				lastY -= textSurface.H + 2
+			} else {
+				lastY += textSurface.H + 2
+			}
 		}
 
 		// Dont print newline characters
 		if []byte(char)[0] != []byte("\n")[0] {
-			if err := textsurface.Blit(nil, surface, &sdl.Rect{X: lastX, Y: lastY, W: 0, H: 0}); err != nil {
+			if lastY+textSurface.H+2 > surface.H {
+				scrollBottom(surface, textSurface)
+				lastY -= textSurface.H + 2
+			}
+
+			err := textSurface.Blit(nil, surface, &sdl.Rect{X: lastX, Y: lastY, W: 0, H: 0})
+			if err != nil {
 				return err
 			}
 
-			lastX += textsurface.W
+			lastX += textSurface.W
 
 			// Update the window surface with what we have drawn
 			typer.Window.UpdateSurface()
 		}
 	}
-
-	lastY += textsurface.H + 2
+	lastY += textSurface.H + 2
 
 	//return position for next line to be typed from
 	typer.Pos = Position{
@@ -112,7 +122,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 
 	var surface *sdl.Surface
 	var font *ttf.Font
-	var textsurface *sdl.Surface
+	var textSurface *sdl.Surface
 
 	var err error
 	var lastY int32
@@ -132,15 +142,24 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	for _, line := range split {
 		if len(line) > 0 {
 			// Create text using font
-			if textsurface, err = font.RenderUTF8Blended(line, color); err != nil {
+			if textSurface, err = font.RenderUTF8Blended(line, color); err != nil {
 				return err
 			}
-			defer textsurface.Free()
+			defer textSurface.Free()
 
-			if err := textsurface.Blit(nil, surface, &sdl.Rect{X: typer.Pos.X, Y: lastY, W: 0, H: 0}); err != nil {
+			//check if its planning to print to a newline here?
+			if lastY+textSurface.H+2 > surface.H {
+				scrollBottom(surface, textSurface)
+				lastY -= textSurface.H + 2
+			}
+
+			err := textSurface.Blit(nil, surface, &sdl.Rect{X: typer.Pos.X, Y: lastY, W: 0, H: 0})
+			if err != nil {
 				return err
 			}
-			lastY += textsurface.H + 2
+
+			lastY += textSurface.H + 2
+
 		}
 	}
 
@@ -151,7 +170,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	}
 
 	//in case textSurface was never defined
-	if textsurface == nil {
+	if textSurface == nil {
 		//return position for next line to be typed from
 		typer.Pos = Position{
 			X: 5,
@@ -164,7 +183,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 
 	//return position for next line to be typed from
 	typer.Pos = Position{
-		X: typer.Pos.X + textsurface.W + 1,
+		X: typer.Pos.X + textSurface.W + 1,
 		Y: lastY,
 		W: surface.W,
 		H: surface.H,
@@ -203,4 +222,29 @@ func getKeyDelay(typeSpeed int, humanize float64) time.Duration {
 		return time.Duration(float64(typeSpeed)+variance) * time.Millisecond
 	}
 	return time.Duration(typeSpeed) * time.Millisecond
+}
+
+func scrollBottom(surface *sdl.Surface, lastText *sdl.Surface) error {
+	//store the data in the current surface
+	surfaceStore := *surface
+
+	colorFix := sdl.Color{
+		R: 255,
+		G: 0,
+		B: 0,
+		A: 0,
+	}
+
+	//move the surface up by one line
+	err := surfaceStore.Blit(nil, surface, &sdl.Rect{X: 0, Y: -lastText.H - 2, W: 0, H: 0})
+	if err != nil {
+		return err
+	}
+
+	//erase the old line that was moved up one
+	err = surface.FillRect(&sdl.Rect{X: 0, Y: surface.H - lastText.H - 2, W: surface.W, H: lastText.H}, colorFix.Uint32())
+	if err != nil {
+		return err
+	}
+	return nil
 }

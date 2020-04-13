@@ -19,27 +19,44 @@ func printPrompt(cfg Config, typer *Typer) error {
 
 	lineY := typer.Pos.Y
 
-	//print promt to terminal window
+	//print promt to terminal window using the user specified color for each section of the prompt
 	err = typer.Print(cfg.User, userColor)
 	if err != nil {
 		return err
 	}
+	//if the line is scrolled up from the bottom, y pos will be modified in print and needs to be reset a line higher
+	if lineY == typer.Pos.Y {
+		lineY -= int32(cfg.FontSize) + 2
+	}
 	typer.Pos.Y = lineY
+
 	err = typer.Print(":", primaryColor)
 	if err != nil {
 		return err
 	}
+	if lineY == typer.Pos.Y {
+		lineY -= int32(cfg.FontSize) + 2
+	}
 	typer.Pos.Y = lineY
+
 	err = typer.Print(cfg.Directory, directoryColor)
 	if err != nil {
 		return err
 	}
+	if lineY == typer.Pos.Y {
+		lineY -= int32(cfg.FontSize) + 2
+	}
 	typer.Pos.Y = lineY
+
 	err = typer.Print("$ ", primaryColor)
 	if err != nil {
 		return err
 	}
+	if lineY == typer.Pos.Y {
+		lineY -= int32(cfg.FontSize) + 2
+	}
 	typer.Pos.Y = lineY
+
 	return nil
 }
 
