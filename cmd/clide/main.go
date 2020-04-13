@@ -332,11 +332,6 @@ func listenForQuit(exitChan chan bool) {
 				if target.Event == sdl.WINDOWEVENT_CLOSE {
 					exit(1, exitChan)
 				}
-				//keyboard keys to quit
-				// case *sdl.KeyboardEvent:
-				// 	if target.Keysym.Sym == sdl.K_ESCAPE {
-				// 		exit(1, exitChan)
-				// 	}
 			}
 		}
 	}
