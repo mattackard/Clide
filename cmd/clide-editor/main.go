@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/mattackard/Clide/pkg/clide"
+	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 
 	"github.com/zserge/webview"
 )
@@ -30,6 +32,11 @@ type Files struct {
 
 // Initialize a files struct for persistent storage
 var files = Files{}
+
+var (
+	fontPath = "/usr/share/clide/assets/UbuntuMono-B.ttf"
+	fontSize = 18
+)
 
 // open a webview connection using the client.html file
 // css and js is loaded in through the html
@@ -65,12 +72,14 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
-	w.Navigate("file:///usr/share/clide/editor/convert.html")
+	// w.Navigate("file:///usr/share/clide/editor/edit.html")
+	w.Navigate("file:///home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
 
 	http.HandleFunc("/getFiles", getFiles)
 	http.HandleFunc("/save", saveFiles)
 	http.HandleFunc("/convert", convertToClide)
 	http.HandleFunc("/run", runDemo)
+	http.HandleFunc("/arrangeWindows", arrangeWindows)
 
 	// start http server for communiaction with gui js
 	go http.ListenAndServe(":8080", nil)
@@ -166,6 +175,97 @@ func convertToClide(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func arrangeWindows(w http.ResponseWriter, r *http.Request) {
+	//get request body
+	body, err := getReqBody(r)
+	httpError(w, err, http.StatusInternalServerError)
+
+	//create a new config struct and unmarshal filecontents into it
+	cfg := clide.Config{}
+
+	err = json.Unmarshal([]byte(body.FileContents), &cfg)
+
+	httpError(w, err, http.StatusInternalServerError)
+
+	//initialize sdl2
+	err = ttf.Init()
+	httpError(w, err, http.StatusInternalServerError)
+	defer ttf.Quit()
+
+	err = sdl.Init(sdl.INIT_VIDEO)
+	httpError(w, err, http.StatusInternalServerError)
+	defer sdl.Quit()
+
+	//open a window for each defined in json
+	typerList := []*clide.Typer{}
+	for i, win := range cfg.Windows {
+		window, err := newWindow(win.Name, clide.Position{
+			X: win.X,
+			Y: win.Y,
+			H: win.Height,
+			W: win.Width,
+		})
+		httpError(w, err, http.StatusInternalServerError)
+
+		// go listenForResize(window)
+
+		//set the window object in the cfg window
+		cfg.Windows[i].Window = window
+
+		defer window.Destroy()
+
+		//initialize typer values
+		typer := clide.Typer{
+			Window: window,
+			Pos: clide.Position{
+				X: 5,
+				Y: 5,
+				H: 0,
+				W: 0,
+			},
+			Font: clide.Font{
+				Path: fontPath,
+				Size: fontSize,
+			},
+		}
+
+		typerList = append(typerList, &typer)
+	}
+
+	cfg.TyperList = typerList
+
+	for _, typer := range typerList {
+		err := typer.Print("Press enter to store window positions", sdl.Color{R: 255, G: 255, B: 255, A: 255})
+		httpError(w, err, http.StatusInternalServerError)
+	}
+
+	//listen for quit events to close program
+	listenForQuit()
+
+	for i, newPos := range cfg.Windows {
+		//store the new position
+		newX, newY := newPos.Window.GetPosition()
+		cfg.Windows[i].X = newX
+		cfg.Windows[i].Y = newY
+
+		//store the new size
+		newWidth, newHeight := newPos.Window.GetSize()
+		cfg.Windows[i].Width = newWidth
+		cfg.Windows[i].Height = newHeight
+	}
+
+	bytes, err := json.Marshal(cfg)
+	httpError(w, err, http.StatusInternalServerError)
+
+	//write the json back as response
+	w = setHeaders(w)
+	w.Write(bytes)
+}
+
+func resizeHandler(window clide.Window, event sdl.Event) {
+
+}
+
 func buildClide(text string) ([]byte, error) {
 	//initialize a command slice
 	commands := []clide.Command{}
@@ -240,5 +340,79 @@ func httpError(w http.ResponseWriter, err error, statusCode int) {
 		w = setHeaders(w)
 		w.WriteHeader(statusCode)
 		w.Write([]byte(err.Error()))
+	}
+}
+
+// newWindow creates a new sdl2 window
+func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
+	var window *sdl.Window
+	var err error
+
+	// Create a window for us to draw the text on
+	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE); err != nil {
+		return nil, err
+	}
+
+	iconSurface, err := sdl.LoadBMP("/usr/share/clide/assets/clide_icon.bmp")
+	if err != nil {
+		return nil, err
+	}
+	window.SetIcon(iconSurface)
+
+	return window, nil
+}
+
+// listenForQuit watches for a quit event on any window and exits clide with status 1 when found
+func listenForQuit() {
+	for {
+		//keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch target := event.(type) {
+
+			//if quit event, close program
+			case *sdl.QuitEvent:
+				return
+			//if any window is closed, close program
+			case *sdl.WindowEvent:
+				if target.Event == sdl.WINDOWEVENT_CLOSE {
+					return
+				}
+			//keyboard keys to quit
+			case *sdl.KeyboardEvent:
+				if target.Keysym.Sym == sdl.K_KP_ENTER {
+					return
+				}
+				if target.Keysym.Sym == sdl.K_RETURN {
+					return
+				}
+			}
+		}
+	}
+}
+
+func listenForResize(window *sdl.Window) {
+	surface, err := window.GetSurface()
+	if err != nil {
+		panic(err)
+	}
+
+	for {
+		//keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch target := event.(type) {
+
+			//if any window is closed, close program
+			case *sdl.WindowEvent:
+				if target.Event == sdl.WINDOWEVENT_RESIZED {
+					fmt.Println("window resized")
+					err := surface.FillRect(nil, sdl.Color{R: 255, G: 255, B: 255, A: 255}.Uint32())
+					if err != nil {
+						panic(err)
+					}
+
+					window.UpdateSurface()
+				}
+			}
+		}
 	}
 }

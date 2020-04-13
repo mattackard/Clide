@@ -86,6 +86,44 @@ addWindow.addEventListener("click", () => {
   );
 });
 
+arrangeWindows.addEventListener("click", e => {
+  fetch("http://localhost:8080/arrangeWindows", {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileContents: JSON.stringify(buildWindowJSON(e.target.parentNode)),
+    }),
+  }).then(res => res.json()).then(json => {
+    let newHTML = "";
+    json.windows.forEach(window => {
+      newHTML += `<div class="clideWindow">
+      <button class="removeButton" onclick="removeElement(this)">X</button>
+      <div>
+        <label for="windowName">Name</label>
+        <input type="text" class="windowName" value="${window.name}" />
+      </div>
+      <div>
+        <label for="x">X Position</label>
+        <input type="number" class="x number" value="${window.x}" />
+      </div>
+      <div>
+        <label for="y">Y Position</label>
+        <input type="number" class="y number" value="${window.y}" />
+      </div>
+      <div>
+        <label for="height">Vertical Resolution</label>
+        <input type="number" class="height number" value="${window.height}" />
+      </div>
+      <div>
+        <label for="width">Horizontal Resolution</label>
+        <input type="number" class="width number" value="${window.width}" /></div></div >`
+    });
+    windowContainer.innerHTML = newHTML;
+  });
+});
+
 recordKey.addEventListener("click", () => {
   recordKey.innerText = "Press a key";
   document.addEventListener("keydown", listenForOneKey);
@@ -263,6 +301,29 @@ function buildJSON() {
     commands: commandArr,
   };
   return newClide;
+}
+
+function buildWindowJSON(container) {
+  //create an array containing window objects
+  let windowArr = [];
+  let windowList = container.getElementsByClassName("clideWindow");
+  for (let i = 0; i < windowList.length; i++) {
+    let name = windowList[i].getElementsByClassName("windowName").item(0);
+    let x = windowList[i].getElementsByClassName("x").item(0);
+    let y = windowList[i].getElementsByClassName("y").item(0);
+    let height = windowList[i].getElementsByClassName("height").item(0);
+    let width = windowList[i].getElementsByClassName("width").item(0);
+
+    windowArr.push({
+      name: name.value,
+      x: parseInt(x.value),
+      y: parseInt(y.value),
+      height: parseInt(height.value) > 0 ? parseInt(height.value) : 600,
+      width: parseInt(width.value) > 0 ? parseInt(width.value) : 1000,
+    });
+  }
+
+  return {windows: windowArr};
 }
 
 //saveToFile saves the json file using the browsers default behavior
