@@ -228,11 +228,13 @@ func scrollBottom(surface *sdl.Surface, lastText *sdl.Surface) error {
 	//store the data in the current surface
 	surfaceStore := *surface
 
+	r, g, b, a := surfaceStore.At(0, 0).RGBA()
+
 	colorFix := sdl.Color{
-		R: 255,
-		G: 0,
-		B: 0,
-		A: 0,
+		R: uint8(a),
+		G: uint8(b),
+		B: uint8(g),
+		A: uint8(r),
 	}
 
 	//move the surface up by one line
