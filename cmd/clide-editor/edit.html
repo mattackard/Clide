@@ -53,6 +53,8 @@
           <input type="number" id="fontSize" class="number" placeholder="24" />
         </div>
         <div>
+          <label for="hideWindows">Hide Windows Before Execution</label
+            ><input type="checkbox" id="hideWindows" />
           <label for="hideWarnings">Hide Warnings</label
           ><input type="checkbox" id="hideWarnings" />
           <label for="clearBeforeAll">Clear window before all commands</label
@@ -89,8 +91,8 @@
             </div>
           </div>
         </div>
+        <button id="arrangeWindows" onclick="arrangeWindows(this)">Arrange Windows</button>
         <button id="addWindow">Add a window</button>
-        <button id="arrangeWindows">Arrange Windows</button>
       </div>
       <div id="triggerKeys">
         <h2>Trigger Keys</h2>

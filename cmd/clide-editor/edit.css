@@ -56,7 +56,7 @@ input[type="checkbox"] {
   margin-right: 4rem !important;
 }
 
-#windowContainer {
+#windowContainer, .resize {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

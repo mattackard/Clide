@@ -4,6 +4,7 @@ const directory = document.getElementById("directory");
 const typeSpeed = document.getElementById("typespeed");
 const humanize = document.getElementById("humanize");
 const hideWarnings = document.getElementById("hideWarnings");
+const hideWindows = document.getElementById("hideWindows");
 const clearBeforeAll = document.getElementById("clearBeforeAll");
 const keyTriggerAll = document.getElementById("keyTriggerAll");
 const fontPath = document.getElementById("fontPath");
@@ -21,13 +22,13 @@ const userPreview = document.getElementById("userPreview");
 const directoryPreview = document.getElementById("directoryPreview");
 const primaryText = document.getElementsByClassName("primaryText");
 const addWindow = document.getElementById("addWindow");
-const arrangeWindows = document.getElementById("arrangeWindows");
 const recordKey = document.getElementById("recordKey");
 let removeButtons = document.getElementsByClassName("removeButton");
 
 //command config elements
 const commands = document.getElementById("commands");
 let addCommand = document.getElementsByClassName("addCommand");
+let resizeWindows = document.getElementsByClassName("resizeWindows");
 
 const fileInput = document.getElementById("fileInput");
 const saveFile = document.getElementById("saveFile");
@@ -60,68 +61,28 @@ document.addEventListener("focusout", () => {
 });
 
 addWindow.addEventListener("click", () => {
-  windowContainer.insertAdjacentHTML(
-    "beforeend",
-    `<div class="clideWindow">
-        <button class="removeButton" onclick="removeElement(this)">X</button>
-        <div>
-          <label for="windowName">Name</label>
-          <input type="text" class="windowName" value="New Window" />
-        </div>
-        <div>
-          <label for="x">X Position</label>
-          <input type="number" class="x number" value="0" />
-        </div>
-        <div>
-          <label for="y">Y Position</label>
-          <input type="number" class="y number" value="0" />
-        </div>
-        <div>
-          <label for="height">Vertical Resolution</label>
-          <input type="number" class="height number" value="600" />
-        </div>
-        <div>
-          <label for="width">Horizontal Resolution</label>
-          <input type="number" class="width number" value="1000" /></div>`
-  );
-});
-
-arrangeWindows.addEventListener("click", e => {
-  fetch("http://localhost:8080/arrangeWindows", {
-    method: "POST",
-    header: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      fileContents: JSON.stringify(buildWindowJSON(e.target.parentNode)),
-    }),
-  }).then(res => res.json()).then(json => {
-    let newHTML = "";
-    json.windows.forEach(window => {
-      newHTML += `<div class="clideWindow">
-      <button class="removeButton" onclick="removeElement(this)">X</button>
-      <div>
-        <label for="windowName">Name</label>
-        <input type="text" class="windowName" value="${window.name}" />
-      </div>
-      <div>
-        <label for="x">X Position</label>
-        <input type="number" class="x number" value="${window.x}" />
-      </div>
-      <div>
-        <label for="y">Y Position</label>
-        <input type="number" class="y number" value="${window.y}" />
-      </div>
-      <div>
-        <label for="height">Vertical Resolution</label>
-        <input type="number" class="height number" value="${window.height}" />
-      </div>
-      <div>
-        <label for="width">Horizontal Resolution</label>
-        <input type="number" class="width number" value="${window.width}" /></div></div >`
-    });
-    windowContainer.innerHTML = newHTML;
-  });
+  let newHTML = `<div class="clideWindow">
+  <button class="removeButton" onclick="removeElement(this)">X</button>
+  <div>
+    <label for="windowName">Name</label>
+    <input type="text" class="windowName" value="New Window" />
+  </div>
+  <div>
+    <label for="x">X Position</label>
+    <input type="number" class="x number" value="0" />
+  </div>
+  <div>
+    <label for="y">Y Position</label>
+    <input type="number" class="y number" value="0" />
+  </div>
+  <div>
+    <label for="height">Vertical Resolution</label>
+    <input type="number" class="height number" value="600" />
+  </div>
+  <div>
+    <label for="width">Horizontal Resolution</label>
+    <input type="number" class="width number" value="1000" /></div>`;
+  windowContainer.insertAdjacentHTML("beforeend", newHTML);
 });
 
 recordKey.addEventListener("click", () => {
@@ -164,15 +125,58 @@ function addNewCommand() {
         <label for="timeout">Timeout</label
         ><input type="number" class="timeout" placeholder="500" />
         <div>
-        <label for="typed">Typed</label><input type="checkbox" class="typed"/>
-        <label for="hidden">Hidden</label><input type="checkbox" class="hidden"/>
-        <label for="waitForKey">Wait for key press</label
-        ><input type="checkbox" class="waitForKey"/>
-        <label for="clearBeforeRun">Clear window before execution</label
-        ><input type="checkbox" class="clearBeforeRun" />
-        <label for="async">Asynchronous</label
-        ><input type="checkbox" class="async"/></div>`
+          <label for="typed">Typed</label><input type="checkbox" class="typed"/>
+          <label for="hidden">Hidden</label><input type="checkbox" class="hidden"/>
+          <label for="waitForKey">Wait for key press</label
+          ><input type="checkbox" class="waitForKey"/>
+          <label for="clearBeforeRun">Clear window before execution</label
+          ><input type="checkbox" class="clearBeforeRun" />
+          <label for="async">Asynchronous</label
+          ><input type="checkbox" class="async"/>
+          <label for="resizeWindows">Resize windows</label
+          ><input type="checkbox" class="resizeWindows" onchange="showWindows(this)"/>
+        </div>
+        <div class="resize"></div>
+    </div>`
   );
+}
+
+function arrangeWindows(element) {
+  fetch("http://localhost:8080/arrangeWindows", {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileContents: JSON.stringify(buildWindowJSON(element.parentNode)),
+    }),
+  }).then(res => res.json()).then(json => {
+    let newHTML = "";
+    json.windows.forEach(window => {
+      newHTML += `<div class="clideWindow">
+      <button class="removeButton" onclick="removeElement(this)">X</button>
+      <div>
+        <label for="windowName">Name</label>
+        <input type="text" class="windowName" value="${window.name}" />
+      </div>
+      <div>
+        <label for="x">X Position</label>
+        <input type="number" class="x number" value="${window.x}" />
+      </div>
+      <div>
+        <label for="y">Y Position</label>
+        <input type="number" class="y number" value="${window.y}" />
+      </div>
+      <div>
+        <label for="height">Vertical Resolution</label>
+        <input type="number" class="height number" value="${window.height}" />
+      </div>
+      <div>
+        <label for="width">Horizontal Resolution</label>
+        <input type="number" class="width number" value="${window.width}" /></div></div >`
+    });
+    element.previousElementSibling.innerHTML = newHTML;
+  });
 }
 
 function removeElement(element) {
@@ -238,6 +242,7 @@ function buildJSON() {
       .getElementsByClassName("clearBeforeRun")
       .item(0);
     let async = commandList[i].getElementsByClassName("async").item(0);
+    let resizedWindows = buildWindowJSON(commandList[i]).windows;
 
     commandArr.push({
       cmd: cmd.value,
@@ -250,30 +255,14 @@ function buildJSON() {
       waitForKey: waitForKey.checked,
       clearBeforeRun: clearBeforeRun.checked,
       async: async.checked,
+      resizeWindows: resizedWindows
     });
   }
 
   //create an array containing window objects
-  let windowArr = [];
-  let windowList = document.getElementsByClassName("clideWindow");
-  for (let i = 0; i < windowList.length; i++) {
-    let name = windowList[i].getElementsByClassName("windowName").item(0);
-    let x = windowList[i].getElementsByClassName("x").item(0);
-    let y = windowList[i].getElementsByClassName("y").item(0);
-    let height = windowList[i].getElementsByClassName("height").item(0);
-    let width = windowList[i].getElementsByClassName("width").item(0);
-
-    windowArr.push({
-      name: name.value,
-      x: parseInt(x.value),
-      y: parseInt(y.value),
-      height: parseInt(height.value) > 0 ? parseInt(height.value) : 600,
-      width: parseInt(width.value) > 0 ? parseInt(width.value) : 1000,
-    });
-  }
+  let windowArr = buildWindowJSON(windowContainer).windows;
 
   //create an array of key strings
-
   let keyArr = [];
   keyList.childNodes.forEach((key) => {
     keyArr.push(key.innerText.substring(0, key.innerText.length - 1));
@@ -286,6 +275,7 @@ function buildJSON() {
     typespeed: parseInt(typeSpeed.value),
     humanize: parseFloat(humanize.value),
     hideWarnings: hideWarnings.checked,
+    hideWindows: hideWindows.checked,
     clearBeforeAll: clearBeforeAll.checked,
     keyTriggerAll: keyTriggerAll.checked,
     fontPath: fontPath.value,
@@ -353,6 +343,7 @@ function populateConfig(clide) {
   typeSpeed.value = clide.typespeed;
   humanize.value = clide.humanize;
   hideWarnings.checked = clide.hideWarnings;
+  hideWindows.checked = clide.hideWindows;
   clearBeforeAll.checked = clide.clearBeforeAll;
   keyTriggerAll.checked = clide.keyTriggerAll;
   fontPath.value = clide.fontPath ? clide.fontPath : "";
@@ -419,6 +410,7 @@ function populateConfig(clide) {
           <label for="width">Horizontal Resolution</label>
           <input type="number" class="width number" value="${window.width}" /></div></div >`;
     });
+    windowHTML = html
     windowContainer.innerHTML = html;
   }
 
@@ -435,7 +427,35 @@ function populateConfig(clide) {
 
   //build all command divs
   cmdHTML = `<h1>Command Configuration</h1><button class="addCommand" onclick="addNewCommand()">Add Commmand</button>`;
-  clide.commands.forEach((command) => {
+  clide.commands.forEach(command => {
+    let resizeHTML = "";
+    if (command.resizeWindows) {
+      command.resizeWindows.forEach(window => {
+        resizeHTML += `<div class="clideWindow">
+          <button class="removeButton" onclick="removeElement(this)">X</button>
+          <div>
+            <label for="windowName">Name</label>
+            <input type="text" class="windowName" value="${window.name}" />
+          </div>
+          <div>
+            <label for="x">X Position</label>
+            <input type="number" class="x number" value="${window.x}" />
+          </div>
+          <div>
+            <label for="y">Y Position</label>
+            <input type="number" class="y number" value="${window.y}" />
+          </div>
+          <div>
+            <label for="height">Vertical Resolution</label>
+            <input type="number" class="height number" value="${window.height}" />
+          </div>
+          <div>
+            <label for="width">Horizontal Resolution</label>
+            <input type="number" class="width number" value="${window.width}" /></div></div >`
+      });
+    }
+    
+
     cmdHTML += `<div class="command">
         <button class="removeButton" onclick="removeElement(this)">X</button>
         <input type="text" class="cmd" value="${command.cmd.replace(/"/g, '&quot;')}" />
@@ -472,11 +492,29 @@ function populateConfig(clide) {
         <label for="async">Asynchronous</label
         ><input type="checkbox" class="async" ${
           command.async ? "checked" : ""
+        } />
+        <label for="resizeWindows">Resize windows</label
+        ><input type="checkbox" class="resizeWindows" onchange="showWindows(this)" ${
+          resizeHTML == "" ? "" : "checked"
         } /></div>
+        <div class="resize">${resizeHTML == "" ? "" : resizeHTML}</div>
+        ${resizeHTML == "" ? "" : `<button onclick="arrangeWindows(this)">Arrange Windows</button>`}
       </div>`;
   });
 
   commands.innerHTML = cmdHTML;
+}
+
+//show windows creates a div with all windows for resizing in a command
+function showWindows(element) {
+  let div = element.parentNode.parentNode.getElementsByClassName("resize");
+  if (element.checked) {
+    div[0].innerHTML = windowContainer.innerHTML;
+    div[0].outerHTML += `<button onclick="arrangeWindows(this)">Arrange Windows</button>`;
+  } else {
+    div[0].innerHTML = "";
+    div[0].nextSibling.outerHTML = "";
+  }
 }
 
 //takes an rgba in the form of 255,255,255,255 and return a hex value
