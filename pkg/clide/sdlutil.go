@@ -1,6 +1,7 @@
 package clide
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"sync"
@@ -37,7 +38,7 @@ type Font struct {
 // Type prints the text to a sdl2 window and simulates a user typing the string
 // it returns a position struct describing the completed surface
 func (typer *Typer) Type(text string, color sdl.Color) error {
-	//split string into array of cingle characters
+	// split string into array of cingle characters
 	split := strings.Split(text, "")
 
 	var surface *sdl.Surface
@@ -48,7 +49,7 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 	lastX := typer.Pos.X
 	lastY := typer.Pos.Y
 
-	//get surface info
+	// get surface info
 	if surface, err = typer.Window.GetSurface(); err != nil {
 		return err
 	}
@@ -106,7 +107,7 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 	}
 	lastY += textSurface.H + 2
 
-	//return position for next line to be typed from
+	// return position for next line to be typed from
 	typer.Pos = Position{
 		X: lastX,
 		Y: lastY,
@@ -138,7 +139,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	}
 	defer font.Close()
 
-	//print each line individually
+	// print each line individually
 	for _, line := range split {
 		if len(line) > 0 {
 			// Create text using font
@@ -147,7 +148,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 			}
 			defer textSurface.Free()
 
-			//check if its planning to print to a newline here?
+			// check if its planning to print to a newline here?
 			if lastY+textSurface.H+2 > surface.H {
 				scrollBottom(surface, textSurface)
 				lastY -= textSurface.H + 2
@@ -166,12 +167,12 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	// Update the window surface with what we have drawn
 	err = typer.Window.UpdateSurface()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	//in case textSurface was never defined
+	// in case textSurface was never defined
 	if textSurface == nil {
-		//return position for next line to be typed from
+		// return position for next line to be typed from
 		typer.Pos = Position{
 			X: 5,
 			Y: lastY,
@@ -181,7 +182,7 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 		return nil
 	}
 
-	//return position for next line to be typed from
+	// return position for next line to be typed from
 	typer.Pos = Position{
 		X: typer.Pos.X + textSurface.W + 1,
 		Y: lastY,
@@ -191,12 +192,44 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	return nil
 }
 
+// BuildTyperList creates a window for each window defined in config, and then
+// attaches a typer to each window that is created
+func (cfg Config) BuildTyperList() ([]*Typer, error) {
+	typerList := []*Typer{}
+	for i, win := range cfg.Windows {
+		window, err := NewWindow(win.Name, Position{
+			X: win.X,
+			Y: win.Y,
+			H: win.Height,
+			W: win.Width,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		// go listenForResize(window)
+
+		// set the window object in the cfg window
+		cfg.Windows[i].Window = window
+
+		// initialize typer values
+		typer := cfg.NewTyper(window)
+
+		typerList = append(typerList, typer)
+
+		if cfg.HideWindows {
+			window.Hide()
+		}
+	}
+	return typerList, nil
+}
+
 // ListenForKey blocks execution until a key is pressed.
 // Use in a goroutine to watch in the background
 func ListenForKey(cfg Config) {
 	pressed := false
 	for !pressed {
-		//keep checking keyboard events until a trigger key is pressed
+		// keep checking keyboard events until a trigger key is pressed
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch t := event.(type) {
 			case *sdl.KeyboardEvent:
@@ -210,13 +243,52 @@ func ListenForKey(cfg Config) {
 	}
 }
 
-//getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio
+// NewWindow creates a new clide window using sdl2
+func NewWindow(title string, pos Position) (*sdl.Window, error) {
+	var window *sdl.Window
+	var err error
+
+	// Create a window for us to draw the text on
+	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN); err != nil {
+		return nil, err
+	}
+
+	iconSurface, err := sdl.LoadBMP("/usr/share/clide/assets/clide_icon.bmp")
+	if err != nil {
+		return nil, err
+	}
+	window.SetIcon(iconSurface)
+
+	return window, nil
+}
+
+// NewTyper creates a new typer referencing the given window
+func (cfg Config) NewTyper(window *sdl.Window) *Typer {
+	typer := Typer{
+		Window: window,
+		Pos: Position{
+			X: 5,
+			Y: 5,
+			H: 0,
+			W: 0,
+		},
+		Font: Font{
+			Path: cfg.FontPath,
+			Size: cfg.FontSize,
+		},
+		Speed:    cfg.TypeSpeed,
+		Humanize: cfg.Humanize,
+	}
+	return &typer
+}
+
+// getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio
 func getKeyDelay(typeSpeed int, humanize float64) time.Duration {
 	if humanize > 0 {
-		//set up a seeded random
+		// set up a seeded random
 		rand.Seed(time.Now().UnixNano())
 
-		//calculate speed variance based on humanize field
+		// calculate speed variance based on humanize field
 		variance := (1 - humanize - rand.Float64()) * float64(typeSpeed)
 
 		return time.Duration(float64(typeSpeed)+variance) * time.Millisecond
@@ -224,8 +296,9 @@ func getKeyDelay(typeSpeed int, humanize float64) time.Duration {
 	return time.Duration(typeSpeed) * time.Millisecond
 }
 
+// scrollBottom moves the surface to make room for another line if there is no more room at the bottom of the window
 func scrollBottom(surface *sdl.Surface, lastText *sdl.Surface) error {
-	//store the data in the current surface
+	// store the data in the current surface
 	surfaceStore := *surface
 
 	r, g, b, a := surfaceStore.At(0, 0).RGBA()
@@ -237,16 +310,44 @@ func scrollBottom(surface *sdl.Surface, lastText *sdl.Surface) error {
 		A: uint8(r),
 	}
 
-	//move the surface up by one line
+	// move the surface up by one line
 	err := surfaceStore.Blit(nil, surface, &sdl.Rect{X: 0, Y: -lastText.H - 2, W: 0, H: 0})
 	if err != nil {
 		return err
 	}
 
-	//erase the old line that was moved up one
+	// erase the old line that was moved up one
 	err = surface.FillRect(&sdl.Rect{X: 0, Y: surface.H - lastText.H - 2, W: surface.W, H: lastText.H}, colorFix.Uint32())
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// listenForResize refreshes the window's surface on window resize
+func listenForResize(window *sdl.Window) error {
+	surface, err := window.GetSurface()
+	if err != nil {
+		return err
+	}
+
+	for {
+		// keep checking keyboard events until a trigger key is pressed
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch target := event.(type) {
+
+			// if any window is closed, close program
+			case *sdl.WindowEvent:
+				if target.Event == sdl.WINDOWEVENT_RESIZED {
+					fmt.Println("window resized")
+					err := surface.FillRect(nil, sdl.Color{R: 255, G: 255, B: 255, A: 255}.Uint32())
+					if err != nil {
+						return err
+					}
+
+					window.UpdateSurface()
+				}
+			}
+		}
+	}
 }

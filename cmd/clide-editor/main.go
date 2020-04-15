@@ -24,7 +24,7 @@ type Request struct {
 	FileContents string `json:"fileContents"`
 }
 
-//Files stores the information for the files being worked on in the editor
+// Files stores the information for the files being worked on in the editor
 type Files struct {
 	ScriptText string `json:"scriptText"`
 	JSONText   string `json:"jsonText"`
@@ -41,7 +41,7 @@ var (
 // open a webview connection using the client.html file
 // css and js is loaded in through the html
 func main() {
-	//get file contents passed in as an argumemnt
+	// get file contents passed in as an argumemnt
 	if len(os.Args) > 1 {
 		file, err := os.Open(os.Args[1])
 		if err != nil {
@@ -67,13 +67,13 @@ func main() {
 		}
 	}
 
-	//set up webview gui
+	// set up webview gui
 	w := webview.New(true)
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
-	// w.Navigate("file:///usr/share/clide/editor/edit.html")
-	w.Navigate("file:///home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
+	// w.Navigate("file:// /usr/share/clide/editor/edit.html")
+	w.Navigate("file:// /home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
 
 	http.HandleFunc("/getFiles", getFiles)
 	http.HandleFunc("/save", saveFiles)
@@ -90,24 +90,24 @@ func main() {
 
 // runDemo test runs the json file provided in the request with clide
 func runDemo(w http.ResponseWriter, r *http.Request) {
-	//parse json
+	// parse json
 	body, err := getReqBody(r)
 	httpError(w, err, http.StatusInternalServerError)
 
-	//create a temp file and write the json into it
+	// create a temp file and write the json into it
 	file, err := os.Create("temp.json")
 	httpError(w, err, http.StatusInternalServerError)
 
 	_, err = file.WriteString(body.FileContents)
 	httpError(w, err, http.StatusInternalServerError)
 
-	//update stored json contents
+	// update stored json contents
 	files.JSONText = body.FileContents
 
 	file.Close()
 	defer os.Remove("temp.json")
 
-	//execute clide with the temp json as an argument
+	// execute clide with the temp json as an argument
 	cmd := exec.Command("clide", "temp.json")
 	err = cmd.Start()
 	httpError(w, err, http.StatusInternalServerError)
@@ -115,7 +115,7 @@ func runDemo(w http.ResponseWriter, r *http.Request) {
 	w = setHeaders(w)
 	w.Write([]byte("OK"))
 
-	//wait for clide execution to finish before deleting temp file
+	// wait for clide execution to finish before deleting temp file
 	cmd.Wait()
 }
 
@@ -131,11 +131,11 @@ func getFiles(w http.ResponseWriter, r *http.Request) {
 
 // saveFiles saves the contents of the files from the client editor to the files struct
 func saveFiles(w http.ResponseWriter, r *http.Request) {
-	//read request body
+	// read request body
 	body, err := ioutil.ReadAll(r.Body)
 	httpError(w, err, http.StatusInternalServerError)
 
-	//store contents of request body into global files struct
+	// store contents of request body into global files struct
 	err = json.Unmarshal(body, &files)
 	httpError(w, err, http.StatusInternalServerError)
 
@@ -152,14 +152,14 @@ func convertToClide(w http.ResponseWriter, r *http.Request) {
 
 	switch contentType {
 	case "json":
-		//store json into files
+		// store json into files
 		files.JSONText = body.FileContents
 
-		//write the json back as response
+		// write the json back as response
 		w = setHeaders(w)
 		w.Write([]byte(body.FileContents))
 	case "script":
-		//store script into files
+		// store script into files
 		files.ScriptText = body.FileContents
 
 		clide, err := buildClide(body.FileContents)
@@ -175,19 +175,21 @@ func convertToClide(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// arrangeWindows opens up all windows defined in cfg and records the final
+// positions and sizes for each window back to the cfg file
 func arrangeWindows(w http.ResponseWriter, r *http.Request) {
-	//get request body
+	// get request body
 	body, err := getReqBody(r)
 	httpError(w, err, http.StatusInternalServerError)
 
-	//create a new config struct and unmarshal filecontents into it
+	// create a new config struct and unmarshal filecontents into it
 	cfg := clide.Config{}
 
 	err = json.Unmarshal([]byte(body.FileContents), &cfg)
 
 	httpError(w, err, http.StatusInternalServerError)
 
-	//initialize sdl2
+	// initialize sdl2
 	err = ttf.Init()
 	httpError(w, err, http.StatusInternalServerError)
 	defer ttf.Quit()
@@ -196,41 +198,9 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 	httpError(w, err, http.StatusInternalServerError)
 	defer sdl.Quit()
 
-	//open a window for each defined in json
-	typerList := []*clide.Typer{}
-	for i, win := range cfg.Windows {
-		window, err := newWindow(win.Name, clide.Position{
-			X: win.X,
-			Y: win.Y,
-			H: win.Height,
-			W: win.Width,
-		})
-		httpError(w, err, http.StatusInternalServerError)
-
-		// go listenForResize(window)
-
-		//set the window object in the cfg window
-		cfg.Windows[i].Window = window
-
-		defer window.Destroy()
-
-		//initialize typer values
-		typer := clide.Typer{
-			Window: window,
-			Pos: clide.Position{
-				X: 5,
-				Y: 5,
-				H: 0,
-				W: 0,
-			},
-			Font: clide.Font{
-				Path: fontPath,
-				Size: fontSize,
-			},
-		}
-
-		typerList = append(typerList, &typer)
-	}
+	// open a window for each defined in json
+	typerList, err := cfg.BuildTyperList()
+	httpError(w, err, http.StatusInternalServerError)
 
 	cfg.TyperList = typerList
 
@@ -239,16 +209,16 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 		httpError(w, err, http.StatusInternalServerError)
 	}
 
-	//listen for quit events to close program
+	// listen for quit events to close program
 	listenForQuit()
 
 	for i, newPos := range cfg.Windows {
-		//store the new position
+		// store the new position
 		newX, newY := newPos.Window.GetPosition()
 		cfg.Windows[i].X = newX
 		cfg.Windows[i].Y = newY
 
-		//store the new size
+		// store the new size
 		newWidth, newHeight := newPos.Window.GetSize()
 		cfg.Windows[i].Width = newWidth
 		cfg.Windows[i].Height = newHeight
@@ -257,24 +227,20 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(cfg)
 	httpError(w, err, http.StatusInternalServerError)
 
-	//write the json back as response
+	// write the json back as response
 	w = setHeaders(w)
 	w.Write(bytes)
 }
 
-func resizeHandler(window clide.Window, event sdl.Event) {
-
-}
-
 func buildClide(text string) ([]byte, error) {
-	//initialize a command slice
+	// initialize a command slice
 	commands := []clide.Command{}
 
-	//create a command struct for each line in the script
+	// create a command struct for each line in the script
 	split := strings.Split(text, "\n")
 	for _, line := range split {
 
-		//filter out comments and empty lines
+		// filter out comments and empty lines
 		if !strings.HasPrefix(line, "#") && len(strings.Trim(line, " ")) > 0 {
 			commands = append(commands, clide.Command{
 				CmdString: strings.Trim(line, " "),
@@ -284,7 +250,7 @@ func buildClide(text string) ([]byte, error) {
 		}
 	}
 
-	//create a config and put all commands in it
+	// create a config and put all commands in it
 	cfg := clide.Config{
 		User:      "demo@clide",
 		Directory: "/",
@@ -325,7 +291,7 @@ func getReqBody(r *http.Request) (Request, error) {
 	return file, nil
 }
 
-//set header to expect json and allow cors
+// set header to expect json and allow cors
 func setHeaders(w http.ResponseWriter) http.ResponseWriter {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -343,74 +309,28 @@ func httpError(w http.ResponseWriter, err error, statusCode int) {
 	}
 }
 
-// newWindow creates a new sdl2 window
-func newWindow(title string, pos clide.Position) (*sdl.Window, error) {
-	var window *sdl.Window
-	var err error
-
-	// Create a window for us to draw the text on
-	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE); err != nil {
-		return nil, err
-	}
-
-	iconSurface, err := sdl.LoadBMP("/usr/share/clide/assets/clide_icon.bmp")
-	if err != nil {
-		return nil, err
-	}
-	window.SetIcon(iconSurface)
-
-	return window, nil
-}
-
 // listenForQuit watches for a quit event on any window and exits clide with status 1 when found
 func listenForQuit() {
 	for {
-		//keep checking keyboard events until a trigger key is pressed
+		// keep checking keyboard events until a trigger key is pressed
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch target := event.(type) {
 
-			//if quit event, close program
+			// if quit event, close program
 			case *sdl.QuitEvent:
 				return
-			//if any window is closed, close program
+			// if any window is closed, close program
 			case *sdl.WindowEvent:
 				if target.Event == sdl.WINDOWEVENT_CLOSE {
 					return
 				}
-			//keyboard keys to quit
+			// keyboard keys to quit
 			case *sdl.KeyboardEvent:
 				if target.Keysym.Sym == sdl.K_KP_ENTER {
 					return
 				}
 				if target.Keysym.Sym == sdl.K_RETURN {
 					return
-				}
-			}
-		}
-	}
-}
-
-func listenForResize(window *sdl.Window) {
-	surface, err := window.GetSurface()
-	if err != nil {
-		panic(err)
-	}
-
-	for {
-		//keep checking keyboard events until a trigger key is pressed
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch target := event.(type) {
-
-			//if any window is closed, close program
-			case *sdl.WindowEvent:
-				if target.Event == sdl.WINDOWEVENT_RESIZED {
-					fmt.Println("window resized")
-					err := surface.FillRect(nil, sdl.Color{R: 255, G: 255, B: 255, A: 255}.Uint32())
-					if err != nil {
-						panic(err)
-					}
-
-					window.UpdateSurface()
 				}
 			}
 		}

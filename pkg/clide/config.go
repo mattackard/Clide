@@ -1,3 +1,6 @@
+// Package clide is a package utilized in the automated CLI demo tool clide.
+// This package contains functions for managing and manipulating clide commands,
+// windows, and clide-defined structs.
 package clide
 
 import (
@@ -28,7 +31,7 @@ type Config struct {
 	TyperList      []*Typer
 }
 
-// Window holds data for a window created in sdl
+// Window holds data for a window created with sdl2
 type Window struct {
 	Window *sdl.Window
 	Name   string `json:"name"`
@@ -46,8 +49,8 @@ type Colors struct {
 	TerminalBG    string `json:"terminalBG"`
 }
 
-//Validate checks for potential issues in a Config and
-//adds some default values if they are not present
+// Validate checks for potential issues in a Config and
+// adds some default values if they are already not present
 func (cfg Config) Validate() (Config, error) {
 	var window *sdl.Window
 	var err error
@@ -58,7 +61,7 @@ func (cfg Config) Validate() (Config, error) {
 	}
 	defer window.Destroy()
 
-	//font defaults
+	// font defaults
 	if cfg.FontPath == "" {
 		cfg.FontPath = "/usr/share/clide/assets/UbuntuMono-B.ttf"
 	}
@@ -66,26 +69,12 @@ func (cfg Config) Validate() (Config, error) {
 		cfg.FontSize = 18
 	}
 
-	//initialize typer values
-	typer := Typer{
-		Window: window,
-		Pos: Position{
-			X: 50,
-			Y: 5,
-			H: 0,
-			W: 0,
-		},
-		Font: Font{
-			Path: cfg.FontPath,
-			Size: cfg.FontSize,
-		},
-		Speed:    cfg.TypeSpeed,
-		Humanize: cfg.Humanize,
-	}
+	// initialize typer values
+	typer := cfg.NewTyper(window)
 
-	//if no windows were provided in json, create one
+	// if no windows were provided in json, create one
 	if len(cfg.Windows) == 0 {
-		cfg.Windows = []Window{Window{
+		cfg.Windows = []Window{{
 			Name:   "Clide",
 			X:      0,
 			Y:      0,
@@ -94,13 +83,7 @@ func (cfg Config) Validate() (Config, error) {
 		}}
 	}
 
-	//throw error when no commands are present
-	if len(cfg.Commands) == 0 {
-		typer.Print("No commands found in provided json file", sdl.Color{R: 255, G: 0, B: 0, A: 255})
-		return cfg, errors.New("No commands found in provided json file")
-	}
-
-	//default directory
+	// default directory
 	if cfg.Directory == "" {
 		var err error
 		cfg.Directory, err = os.Getwd()
@@ -109,12 +92,12 @@ func (cfg Config) Validate() (Config, error) {
 		}
 	}
 
-	//default user
+	// default user
 	if cfg.User == "" {
 		cfg.User = "demo@clide"
 	}
 
-	//default color scheme
+	// default color scheme
 	if cfg.ColorScheme.UserText == "" || cfg.ColorScheme.DirectoryText == "" || cfg.ColorScheme.PrimaryText == "" || cfg.ColorScheme.TerminalBG == "" {
 		cfg.ColorScheme = Colors{
 			UserText:      "0,150,255,255",
@@ -125,7 +108,7 @@ func (cfg Config) Validate() (Config, error) {
 	}
 
 	if !cfg.HideWarnings {
-		//check if all commands are installed
+		// check if all commands are installed
 		notInstalled := []string{}
 		for _, v := range cfg.Commands {
 			if !v.IsInstalled() {
@@ -133,7 +116,7 @@ func (cfg Config) Validate() (Config, error) {
 			}
 		}
 
-		//comfirm user wants to run program even though uninstalled commands will be skipped
+		// comfirm user wants to run program even though uninstalled commands will be skipped
 		if len(notInstalled) != 0 {
 			typer.Print("WARNING: At least one command is not installed on the system! The following commands will be skipped:", sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			for _, badCmd := range notInstalled {
@@ -144,8 +127,20 @@ func (cfg Config) Validate() (Config, error) {
 	return cfg, nil
 }
 
-//getWindow return the sindow object with the specified name
-func (cfg Config) getWindow(name string) *sdl.Window {
+// NewDefaultConfig returns a config struct initialized to default values
+// useful for writing to a clide window if no config exists
+func NewDefaultConfig() (Config, error) {
+	var err error
+	defaultConfig := Config{}
+	defaultConfig, err = defaultConfig.Validate()
+	if err != nil {
+		return Config{}, err
+	}
+	return defaultConfig, nil
+}
+
+// GetWindow return the window object with the specified name
+func (cfg Config) GetWindow(name string) *sdl.Window {
 	var targetWindow *sdl.Window
 	for _, win := range cfg.Windows {
 		if win.Name == name {
@@ -155,12 +150,12 @@ func (cfg Config) getWindow(name string) *sdl.Window {
 	return targetWindow
 }
 
-//StringToColor converts a rgb or rgba formatted string to an sdl.Color struct
+// StringToColor converts a rgb or rgba formatted string to an sdl.Color struct
 func StringToColor(color string) (sdl.Color, error) {
 	var sdlColor sdl.Color
 	split := strings.Split(color, ",")
 
-	//set either rgb or rgba
+	// set either rgb or rgba
 	switch len(split) {
 	case 3:
 		r, err := strconv.Atoi(split[0])
@@ -197,7 +192,7 @@ func StringToColor(color string) (sdl.Color, error) {
 	return sdlColor, nil
 }
 
-//ClearAllWindows clears all existing windows by referencing all Window objects linked to Typer in cfg.TyperList
+// ClearAllWindows clears all existing windows by referencing all Window objects linked to Typer in cfg.TyperList
 func (cfg Config) ClearAllWindows() error {
 	bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
 	if err != nil {
