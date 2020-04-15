@@ -3,6 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/mattackard/Clide)](https://github.com/mattackard/Clide/releases)
 [![Build](https://img.shields.io/github/workflow/status/mattackard/Clide/Clide)](https://github.com/mattackard/Clide/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mattackard/Clide)](https://goreportcard.com/report/github.com/mattackard/Clide)
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://godoc.org/github.com/mattackard/Clide/pkg/clide)
 
 Clide is a tool for creating automated demos for terminal-based applications. Using a json file, you can script out a demo in the terminal to free your hands up from having to copy and paste commands, or handle typos when you're in the middle of giving a presentation. The scripted commands run in real-time and display the output in a window to emulate a terminal.
 
