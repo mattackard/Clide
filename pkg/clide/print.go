@@ -6,10 +6,10 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-//prompt returns a string used to emulate a terminal prompt
+// prompt returns a string used to emulate a terminal prompt
 func printPrompt(cfg Config, typer *Typer) error {
 
-	//set colors for user, directory, and primary text
+	// set colors for user, directory, and primary text
 	userColor, err := StringToColor(cfg.ColorScheme.UserText)
 	directoryColor, err := StringToColor(cfg.ColorScheme.DirectoryText)
 	primaryColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
@@ -19,12 +19,12 @@ func printPrompt(cfg Config, typer *Typer) error {
 
 	lineY := typer.Pos.Y
 
-	//print promt to terminal window using the user specified color for each section of the prompt
+	// print promt to terminal window using the user specified color for each section of the prompt
 	err = typer.Print(cfg.User, userColor)
 	if err != nil {
 		return err
 	}
-	//if the line is scrolled up from the bottom, y pos will be modified in print and needs to be reset a line higher
+	// if the line is scrolled up from the bottom, y pos will be modified in print and needs to be reset a line higher
 	if lineY == typer.Pos.Y {
 		lineY -= int32(cfg.FontSize) + 2
 	}
@@ -60,10 +60,10 @@ func printPrompt(cfg Config, typer *Typer) error {
 	return nil
 }
 
-//writeCommand prints out the given command and emulates a terminal prompt before it
+// writeCommand prints out the given command and emulates a terminal prompt before it
 func writeCommand(cmd Command, cfg Config, typer *Typer) error {
 
-	//print terminal prompt
+	// print terminal prompt
 	typer.Pos.X = 5
 	err := printPrompt(cfg, typer)
 	if err != nil {
@@ -86,7 +86,7 @@ func writeCommand(cmd Command, cfg Config, typer *Typer) error {
 			ListenForKey(cfg)
 		}
 	} else {
-		//wait before writing the command to the terminal
+		// wait before writing the command to the terminal
 		time.Sleep(time.Duration(cmd.PreDelay) * time.Millisecond)
 	}
 
@@ -95,7 +95,7 @@ func writeCommand(cmd Command, cfg Config, typer *Typer) error {
 		return err
 	}
 
-	//type of print command to window
+	// type of print command to window
 	if cmd.Typed {
 		err = typer.Type(cmd.CmdString, primaryColor)
 		if err != nil {
@@ -113,7 +113,7 @@ func writeCommand(cmd Command, cfg Config, typer *Typer) error {
 			ListenForKey(cfg)
 		}
 	} else {
-		//wait before executing the command, but after writing to the terminal
+		// wait before executing the command, but after writing to the terminal
 		time.Sleep(time.Duration(cmd.PostDelay) * time.Millisecond)
 	}
 
