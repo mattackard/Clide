@@ -3,3 +3,6 @@
 
 #program binaries
 /build
+
+#vscode tools
+.vscode/
