@@ -24,6 +24,7 @@
                 <li class="subnav"><a href="#typespeed">typespeed</a></li>
                 <li class="subnav"><a href="#humanize">humanize</a></li>
                 <li class="subnav"><a href="#hideWarnings">hideWarnings</a></li>
+                <li class="subnav"><a href="#hideWindows">hideWindows</a></li>
                 <li class="subnav"><a href="#clearBeforeAll">clearBeforeAll</a></li>
                 <li class="subnav"><a href="#keyTriggerAll">keyTriggerAll</a></li>
                 <li class="subnav"><a href="#fontPath">fontPath</a></li>
@@ -43,9 +44,15 @@
                 <li class="subnav"><a href="#preDelay">preDelay</a></li>
                 <li class="subnav"><a href="#postDelay">postDelay</a></li>
                 <li class="subnav"><a href="#timeout">timeout</a></li>
+                <li class="subnav"><a href="#resizeWindows">resizeWindows</a></li>
             </nav>
         </div>
         <div class="content">
+            <p  id="introText">Welcome to the clide reference docs. This page contains information about the various
+                fields that can be utilized for configuration of a clide demo. If you are instead looking
+                for documentation pertaining to the Go package "clide" used in making this project
+                take a look at the project's <a href="https://godoc.org/github.com/mattackard/Clide/pkg/clide" target="_blank">godoc page</a> to get more information.
+            </p>
             <h2>Clide Config/Command Reference</h2>
             <section>
                 <p>Clide uses a JSON file for running demos. This documents explains what each JSON field does when running a Clide demo.</p>
@@ -121,6 +128,20 @@
                 <p>Sets whether warnings for uninstalled commands will be shown. 
                     If set, a warning will be printed before running the demo showing the uninstalled commands.
                     Another warning will also appear during runtime showing that the uninstalled command has been skipped.</p>
+            </section>
+            <section id="hideWindows">
+                <div>
+                    <h3>hideWindows</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"hideWindows": false</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cfg.HideWindows = false</span>
+                    </div>
+                </div>
+                <p>If set to true, windows will not be shown until a command is set to write to the window. 
+                    Enable this setting to hide windows that will be used after the start of the demo. 
+                    When changing window layouts with resizeWindows, windows will once again be hidden until a command is set to write to the window.</p>
             </section>
             <section id="clearBeforeAll">
                 <div>
@@ -357,6 +378,19 @@
                 </div>
                 <p>Sets the amount of time to wait in seconds before killing the process. 
                     Use this field with commands that don't exit without user input (ex. listening servers, ping)</p>
+            </section>
+            <section id="resizeWindows">
+                <div>
+                    <h3>resizeWindows</h3>
+                    <div class="codeExample">
+                        <h4>JSON{}</h4><span>"resizeWindows": {}</span>
+                    </div>
+                    <div class="codeExample">
+                        <h4>Go</h4><span>cmd.ResizeWindows = []clide.Window{}</span>
+                    </div>
+                </div>
+                <p>Resize windows adjust the window position and size of each window defined in the given window array. 
+                    Any windows being adjusted must already be defined in the window field in Config.</p>
             </section>
         </div>
     </body>
