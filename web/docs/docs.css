@@ -49,9 +49,8 @@ header {
 }
 
 #introText {
-    margin-left: 25vw;
-    width: 45%;
-    margin-bottom: 4rem;
+    margin-top: 2rem;
+    width: 80%;
     font-size: 1.2rem;
 }
 
