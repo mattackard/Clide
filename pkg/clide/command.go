@@ -122,11 +122,6 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 		}
 	} else if cmd.Async {
 		go cmd.runAsync(command, cfg, typer, textColor, exitChan)
-	} else if cmd.Timeout != 0 {
-		err = cmd.runWithTimeout(command, cfg, typer, textColor)
-		if err != nil {
-			return err
-		}
 	} else {
 		// type the command into the console and wait for it to finish typing before further execution
 		var err error
@@ -147,15 +142,35 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 				}
 			}
 		} else {
-			output, err := command.CombinedOutput()
+			// set up a stdout and stderr pipe to capture the output
+			output, err := command.StdoutPipe()
 			if err != nil {
 				return err
 			}
-			typer.Pos.X = 5
-			err = typer.Print(string(output), textColor)
+			errOutput, err := command.StderrPipe()
 			if err != nil {
 				return err
 			}
+
+			// dont wait for command to finish
+			err = command.Start()
+			if err != nil {
+				return err
+			}
+
+			// stream the output from the command in realtime
+			// won't block so the sleep timer can run while printing
+			go printOutputs(output, errOutput, typer, textColor)
+
+			if cmd.Timeout != 0 {
+				time.Sleep(time.Duration(cmd.Timeout) * time.Second)
+				command.Process.Signal(os.Interrupt)
+			} else {
+				command.Wait()
+			}
+
+			// give any error messages some time to print to the window
+			time.Sleep(time.Millisecond * 10)
 		}
 
 	}
@@ -200,7 +215,7 @@ func (cmd Command) runAsync(command *exec.Cmd, cfg *Config, typer *Typer, textCo
 		for {
 			select {
 			case <-exitChan:
-				command.Process.Kill()
+				command.Process.Signal(os.Interrupt)
 			}
 		}
 	}()
@@ -221,47 +236,10 @@ func (cmd Command) runAsync(command *exec.Cmd, cfg *Config, typer *Typer, textCo
 		typer.Window.Hide()
 	}
 
-	command.Process.Kill()
+	command.Process.Signal(os.Interrupt)
 
 	// give any error messages some time to print to the window
 	time.Sleep(time.Millisecond * 10)
-	return nil
-}
-
-func (cmd Command) runWithTimeout(command *exec.Cmd, cfg *Config, typer *Typer, textColor sdl.Color) error {
-	// type the command into the console and wait for it to finish typing before further execution
-	var err error
-	err = writeCommand(cmd, *cfg, typer)
-	if err != nil {
-		return err
-	}
-
-	// set up a stdout and stderr pipe to capture the output
-	output, err := command.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	errOutput, err := command.StderrPipe()
-	if err != nil {
-		return err
-	}
-
-	// dont wait for command to finish
-	err = command.Start()
-	if err != nil {
-		return err
-	}
-
-	// stream the output from the command in realtime
-	// won't block so the sleep timer can run while printing
-	go printOutputs(output, errOutput, typer, textColor)
-
-	time.Sleep(time.Duration(cmd.Timeout) * time.Second)
-	command.Process.Kill()
-
-	// give any error messages some time to print to the window
-	time.Sleep(time.Millisecond * 10)
-
 	return nil
 }
 
