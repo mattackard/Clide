@@ -72,8 +72,12 @@ func main() {
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
-	// w.Navigate("file:// /usr/share/clide/editor/edit.html")
-	w.Navigate("file:// /home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
+
+	//file path for using installed files
+	w.Navigate("file:///usr/share/clide/editor/edit.html")
+
+	// file path for using development files
+	// w.Navigate("file:///home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
 
 	http.HandleFunc("/getFiles", getFiles)
 	http.HandleFunc("/save", saveFiles)
@@ -184,6 +188,8 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 
 	// create a new config struct and unmarshal filecontents into it
 	cfg := clide.Config{}
+	cfg, err = cfg.Validate()
+	httpError(w, err, http.StatusInternalServerError)
 
 	err = json.Unmarshal([]byte(body.FileContents), &cfg)
 
@@ -209,8 +215,9 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 		httpError(w, err, http.StatusInternalServerError)
 	}
 
-	// listen for quit events to close program
-	listenForQuit()
+	// listen for events to trigger actions to refresh windows on resize,
+	// and exit the program if any quit event is triggered
+	listenForResizeOrQuit()
 
 	for i, newPos := range cfg.Windows {
 		// store the new position
@@ -222,6 +229,10 @@ func arrangeWindows(w http.ResponseWriter, r *http.Request) {
 		newWidth, newHeight := newPos.Window.GetSize()
 		cfg.Windows[i].Width = newWidth
 		cfg.Windows[i].Height = newHeight
+	}
+
+	for _, typer := range typerList {
+		typer.Window.Destroy()
 	}
 
 	bytes, err := json.Marshal(cfg)
@@ -309,8 +320,22 @@ func httpError(w http.ResponseWriter, err error, statusCode int) {
 	}
 }
 
-// listenForQuit watches for a quit event on any window and exits clide with status 1 when found
-func listenForQuit() {
+// listenForResizeOrQuit watches for a quit event on any window and exits clide with status 1 when found
+func listenForResizeOrQuit() {
+	// Load the font for our text
+	font, err := ttf.OpenFont(fontPath, fontSize)
+	if err != nil {
+		panic(err)
+	}
+	defer font.Close()
+
+	// Create text using font
+	textSurface, err := font.RenderUTF8Blended("Press enter to store window positions", sdl.Color{R: 255, G: 255, B: 255, A: 255})
+	if err != nil {
+		panic(err)
+	}
+	defer textSurface.Free()
+
 	for {
 		// keep checking keyboard events until a trigger key is pressed
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -320,9 +345,31 @@ func listenForQuit() {
 			case *sdl.QuitEvent:
 				return
 			// if any window is closed, close program
+			// if any window is resized, update the window surface
 			case *sdl.WindowEvent:
 				if target.Event == sdl.WINDOWEVENT_CLOSE {
 					return
+				}
+				if target.Event == sdl.WINDOWEVENT_RESIZED {
+					window, err := sdl.GetWindowFromID(target.WindowID)
+					if err != nil {
+						panic(err)
+					}
+
+					// get the window surface and duplicate it using the full window size
+					surface, err := window.GetSurface()
+					err = surface.Blit(nil, surface, nil)
+					if err != nil {
+						panic(err)
+					}
+
+					// reapply the text surface to the window
+					err = textSurface.Blit(nil, surface, &sdl.Rect{X: 5, Y: 5, W: 0, H: 0})
+					if err != nil {
+						panic(err)
+					}
+
+					window.UpdateSurface()
 				}
 			// keyboard keys to quit
 			case *sdl.KeyboardEvent:

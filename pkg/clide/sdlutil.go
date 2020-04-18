@@ -1,7 +1,6 @@
 package clide
 
 import (
-	"fmt"
 	"math/rand"
 	"strings"
 	"sync"
@@ -207,8 +206,6 @@ func (cfg Config) BuildTyperList() ([]*Typer, error) {
 			return nil, err
 		}
 
-		// go listenForResize(window)
-
 		// set the window object in the cfg window
 		cfg.Windows[i].Window = window
 
@@ -249,7 +246,7 @@ func NewWindow(title string, pos Position) (*sdl.Window, error) {
 	var err error
 
 	// Create a window for us to draw the text on
-	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN); err != nil {
+	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE); err != nil {
 		return nil, err
 	}
 
@@ -322,32 +319,4 @@ func scrollBottom(surface *sdl.Surface, lastText *sdl.Surface) error {
 		return err
 	}
 	return nil
-}
-
-// listenForResize refreshes the window's surface on window resize
-func listenForResize(window *sdl.Window) error {
-	surface, err := window.GetSurface()
-	if err != nil {
-		return err
-	}
-
-	for {
-		// keep checking keyboard events until a trigger key is pressed
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch target := event.(type) {
-
-			// if any window is closed, close program
-			case *sdl.WindowEvent:
-				if target.Event == sdl.WINDOWEVENT_RESIZED {
-					fmt.Println("window resized")
-					err := surface.FillRect(nil, sdl.Color{R: 255, G: 255, B: 255, A: 255}.Uint32())
-					if err != nil {
-						return err
-					}
-
-					window.UpdateSurface()
-				}
-			}
-		}
-	}
 }
