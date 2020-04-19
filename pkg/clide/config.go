@@ -5,7 +5,9 @@ package clide
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -124,6 +126,13 @@ func (cfg Config) Validate() (Config, error) {
 			}
 		}
 	}
+
+	// checks for any sudo commands and prompt for password if any are present
+	err = cfg.checkForSudo()
+	if err != nil {
+		return cfg, err
+	}
+
 	return cfg, nil
 }
 
@@ -206,5 +215,24 @@ func (cfg Config) ClearAllWindows() error {
 		}
 	}
 
+	return nil
+}
+
+// checkForSudo checks all commands present in Config for any commands needing
+// sudo permissions. It requests the sudo password if needed
+func (cfg Config) checkForSudo() error {
+	for _, cmd := range cfg.Commands {
+		if strings.Contains(cmd.CmdString, "sudo") {
+			fmt.Println("Clide demo contains a sudo command")
+
+			//request sudo password
+			sudo := exec.Command("sudo", "-i")
+			err := sudo.Run()
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
 	return nil
 }
