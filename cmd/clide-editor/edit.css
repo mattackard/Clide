@@ -52,6 +52,19 @@ button:hover {
   opacity: 0.9;
 }
 
+#saveFile {
+  position: relative;
+}
+
+#saveResponse {
+  position: absolute;
+  top: 3rem;
+  right: 0;
+  width: 100vw;
+  text-align: right;
+  color: black;
+}
+
 input[type="checkbox"] {
   margin-right: 4rem !important;
 }

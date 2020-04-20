@@ -68,7 +68,7 @@ func main() {
 	}
 
 	// set up webview gui
-	w := webview.New(true)
+	w := webview.New(false)
 	defer w.Destroy()
 	w.SetTitle("Clide Editor")
 	w.SetSize(1920, 1080, webview.HintNone)
@@ -80,7 +80,8 @@ func main() {
 	// w.Navigate("file:///home/xubuntu/go/src/github.com/mattackard/Clide/cmd/clide-editor/edit.html")
 
 	http.HandleFunc("/getFiles", getFiles)
-	http.HandleFunc("/save", saveFiles)
+	http.HandleFunc("/save", saveFileContents)
+	http.HandleFunc("/saveToFile", saveToFile)
 	http.HandleFunc("/convert", convertToClide)
 	http.HandleFunc("/run", runDemo)
 	http.HandleFunc("/arrangeWindows", arrangeWindows)
@@ -134,7 +135,7 @@ func getFiles(w http.ResponseWriter, r *http.Request) {
 }
 
 // saveFiles saves the contents of the files from the client editor to the files struct
-func saveFiles(w http.ResponseWriter, r *http.Request) {
+func saveFileContents(w http.ResponseWriter, r *http.Request) {
 	// read request body
 	body, err := ioutil.ReadAll(r.Body)
 	httpError(w, err, http.StatusInternalServerError)
@@ -145,6 +146,27 @@ func saveFiles(w http.ResponseWriter, r *http.Request) {
 
 	w = setHeaders(w)
 	w.Write([]byte("OK"))
+}
+
+// saveToFile saves the contents of the json file to an external file using a dialog box
+func saveToFile(w http.ResponseWriter, r *http.Request) {
+	// read request body
+	body, err := ioutil.ReadAll(r.Body)
+	httpError(w, err, http.StatusInternalServerError)
+
+	// store contents of request body into global files struct
+	err = json.Unmarshal(body, &files)
+	httpError(w, err, http.StatusInternalServerError)
+
+	err = ioutil.WriteFile("demo.json", []byte(files.JSONText), 0644)
+	httpError(w, err, http.StatusInternalServerError)
+
+	currentDir, err := os.Getwd()
+	httpError(w, err, http.StatusInternalServerError)
+	responseText := fmt.Sprintf("Demo saved to %s/demo.json", currentDir)
+
+	w = setHeaders(w)
+	w.Write([]byte(responseText))
 }
 
 // convertToClide takes the file sent and converts it into a clide demo

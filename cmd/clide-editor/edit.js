@@ -32,6 +32,7 @@ let resizeWindows = document.getElementsByClassName("resizeWindows");
 
 const fileInput = document.getElementById("fileInput");
 const saveFile = document.getElementById("saveFile");
+const saveResponse = document.getElementById("saveResponse");
 const run = document.getElementById("run");
 
 fileInput.addEventListener("change", handleFiles, false);
@@ -398,21 +399,25 @@ function buildWindowJSON(container) {
 // saveToFile saves the json file using the browsers default behavior
 function saveToFile() {
   let textToSave = JSON.stringify(buildJSON(), null, 4);
-  let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
-  let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
-  let fileNameToSaveAs = "clide-demo.json";
 
-  let downloadLink = document.createElement("a");
-  downloadLink.download = fileNameToSaveAs;
-  downloadLink.innerHTML = "Download File";
-  downloadLink.href = textToSaveAsURL;
-  downloadLink.onclick = (e) => {
-    document.body.removeChild(e.target);
-  };
-  downloadLink.style.display = "none";
-  document.body.appendChild(downloadLink);
+  // fetch to go with updated file contents
+  fetch("http://localhost:8080/saveToFile", {
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      jsonText: textToSave,
+    }),
+  }).then(res => res.text())
+  .then(text => {
+    saveResponse.innerText = text;
 
-  downloadLink.click();
+    // clear text after 3 seconds
+    setTimeout(() => {
+      saveResponse.innerText = null;
+    }, 3000);
+  });
 }
 
 // populateConfig populates all the input fields in the editor window
@@ -632,7 +637,7 @@ function hexToByte(hexString) {
 
 // sends the json data to run with clide
 function runDemo() {
-  fetch("http:// localhost:8080/run", {
+  fetch("http://localhost:8080/run", {
     method: "POST",
     header: {
       "Content-Type": "application/json",
