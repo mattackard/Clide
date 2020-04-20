@@ -139,7 +139,7 @@ Commands
 
 .cmd {
   position: absolute;
-  width: 94%;
+  width: 88%;
   top: 0;
   left: 0;
   padding: 1rem;
@@ -152,4 +152,24 @@ Commands
 .cmd:focus,
 .cmd:hover {
   background-color: rgb(204, 227, 235);
+}
+
+.moveUp {
+  position: absolute;
+  top: 0;
+  right: 6.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border: none;
+  font-size: 1.5rem;
+}
+
+.moveDown {
+  position: absolute;
+  top: 0;
+  right: 4rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border: none;
+  font-size: 1.5rem;
 }

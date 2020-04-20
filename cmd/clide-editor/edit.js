@@ -1,4 +1,4 @@
-//global config elements
+// global config elements
 const user = document.getElementById("user");
 const directory = document.getElementById("directory");
 const typeSpeed = document.getElementById("typespeed");
@@ -25,7 +25,7 @@ const addWindow = document.getElementById("addWindow");
 const recordKey = document.getElementById("recordKey");
 let removeButtons = document.getElementsByClassName("removeButton");
 
-//command config elements
+// command config elements
 const commands = document.getElementById("commands");
 let addCommand = document.getElementsByClassName("addCommand");
 let resizeWindows = document.getElementsByClassName("resizeWindows");
@@ -39,11 +39,11 @@ saveFile.addEventListener("click", saveToFile, false);
 run.addEventListener("click", runDemo, false);
 
 document.addEventListener("DOMContentLoaded", () => {
-  //get any files passed in from cli or another page
+  // get any files passed in from cli or another page
   getFiles();
 });
 
-//saves the json contents every time an element loses focus
+// saves the json contents every time an element loses focus
 document.addEventListener("focusout", () => {
   fetch("http://localhost:8080/save", {
     method: "POST",
@@ -62,7 +62,7 @@ document.addEventListener("focusout", () => {
 
 addWindow.addEventListener("click", () => {
   let newHTML = `<div class="clideWindow">
-  <button class="removeButton" onclick="removeElement(this)">X</button>
+  <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
   <div>
     <label for="windowName">Name</label>
     <input type="text" class="windowName" value="New Window" />
@@ -115,7 +115,9 @@ function addNewCommand() {
   commands.insertAdjacentHTML(
     "beforeend",
     `<div class="command">
-        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
+        <button class="moveUp" onclick="swapCommand(this)">&#8593;</button>
+        <button class="moveDown" onclick="swapCommand(this)">&#8595;</button>
         <input type="text" class="cmd" value="New Command" />
         <label for="window">Window</label><input type="text" class="window"/>
         <label for="predelay">PreDelay</label
@@ -154,7 +156,7 @@ function arrangeWindows(element) {
     let newHTML = "";
     json.windows.forEach(window => {
       newHTML += `<div class="clideWindow">
-      <button class="removeButton" onclick="removeElement(this)">X</button>
+      <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
       <div>
         <label for="windowName">Name</label>
         <input type="text" class="windowName" value="${window.name}" />
@@ -180,7 +182,7 @@ function arrangeWindows(element) {
 }
 
 function removeElement(element) {
-  element.parentNode.outerHTML = "";
+  element.outerHTML = null;
 }
 
 function getFiles() {
@@ -224,51 +226,24 @@ function handleFiles(e) {
 }
 
 function buildJSON() {
-  //create an array containing all commands as json objects
+  // create an array containing all commands as json objects
   let commandArr = [];
   let commandList = document.getElementsByClassName("command");
   for (let i = 0; i < commandList.length; i++) {
-    let cmd = commandList[i].getElementsByClassName("cmd").item(0);
-    let typed = commandList[i].getElementsByClassName("typed").item(0);
-    let window = commandList[i].getElementsByClassName("window").item(0);
-    let predelay = commandList[i].getElementsByClassName("predelay").item(0);
-    let postdelay = commandList[i].getElementsByClassName("postdelay").item(0);
-    let timeout = commandList[i].getElementsByClassName("timeout").item(0);
-    let hidden = commandList[i].getElementsByClassName("hidden").item(0);
-    let waitForKey = commandList[i]
-      .getElementsByClassName("waitForKey")
-      .item(0);
-    let clearBeforeRun = commandList[i]
-      .getElementsByClassName("clearBeforeRun")
-      .item(0);
-    let async = commandList[i].getElementsByClassName("async").item(0);
-    let resizedWindows = buildWindowJSON(commandList[i]).windows;
-
-    commandArr.push({
-      cmd: cmd.value,
-      typed: typed.checked,
-      window: window.value,
-      predelay: parseInt(predelay.value),
-      postdelay: parseInt(postdelay.value),
-      timeout: parseInt(timeout.value),
-      hidden: hidden.checked,
-      waitForKey: waitForKey.checked,
-      clearBeforeRun: clearBeforeRun.checked,
-      async: async.checked,
-      resizeWindows: resizedWindows
-    });
+    let command = storeCommandValues(commandList[i]);
+    commandArr.push(command);
   }
 
-  //create an array containing window objects
+  // create an array containing window objects
   let windowArr = buildWindowJSON(windowContainer).windows;
 
-  //create an array of key strings
+  // create an array of key strings
   let keyArr = [];
   keyList.childNodes.forEach((key) => {
     keyArr.push(key.innerText.substring(0, key.innerText.length - 1));
   });
 
-  //create a new clide demo json and populate with all form fields
+  // create a new clide demo json and populate with all form fields
   let newClide = {
     user: user.value,
     directory: directory.value,
@@ -293,8 +268,112 @@ function buildJSON() {
   return newClide;
 }
 
+function storeCommandValues(command) {
+  let cmd = command.getElementsByClassName("cmd").item(0);
+  let typed = command.getElementsByClassName("typed").item(0);
+  let window = command.getElementsByClassName("window").item(0);
+  let predelay = command.getElementsByClassName("predelay").item(0);
+  let postdelay = command.getElementsByClassName("postdelay").item(0);
+  let timeout = command.getElementsByClassName("timeout").item(0);
+  let hidden = command.getElementsByClassName("hidden").item(0);
+  let waitForKey = command
+    .getElementsByClassName("waitForKey")
+    .item(0);
+  let clearBeforeRun = command
+    .getElementsByClassName("clearBeforeRun")
+    .item(0);
+  let async = command.getElementsByClassName("async").item(0);
+  let resizedWindows = buildWindowJSON(command).windows;
+
+  return {
+    cmd: cmd.value,
+    typed: typed.checked,
+    window: window.value,
+    predelay: parseInt(predelay.value),
+    postdelay: parseInt(postdelay.value),
+    timeout: parseInt(timeout.value),
+    hidden: hidden.checked,
+    waitForKey: waitForKey.checked,
+    clearBeforeRun: clearBeforeRun.checked,
+    async: async.checked,
+    resizeWindows: resizedWindows
+  };
+}
+
+function updateCommandValues(command, newValues) {
+  let cmd = command.getElementsByClassName("cmd").item(0);
+  let typed = command.getElementsByClassName("typed").item(0);
+  let window = command.getElementsByClassName("window").item(0);
+  let predelay = command.getElementsByClassName("predelay").item(0);
+  let postdelay = command.getElementsByClassName("postdelay").item(0);
+  let timeout = command.getElementsByClassName("timeout").item(0);
+  let hidden = command.getElementsByClassName("hidden").item(0);
+  let waitForKey = command
+    .getElementsByClassName("waitForKey")
+    .item(0);
+  let clearBeforeRun = command
+    .getElementsByClassName("clearBeforeRun")
+    .item(0);
+  let async = command.getElementsByClassName("async").item(0);
+  let resizeWindows = command.getElementsByClassName("resizeWindows").item(0);
+  let resizeDiv = command.getElementsByClassName("resize").item(0);
+  let arrangeBtn = command.getElementsByClassName("arrange");
+
+
+    cmd.value = newValues.cmd;
+    typed.checked = newValues.typed;
+    window.value = newValues.window;
+    predelay.value = newValues.predelay;
+    postdelay.value = newValues.postdelay;
+    timeout.value = newValues.timeout;
+    hidden.checked = newValues.hidden;
+    waitForKey.checked = newValues.waitForKey;
+    clearBeforeRun.checked = newValues.clearBeforeRun;
+    async.checked = newValues.checked;
+    resizeWindows.checked = newValues.resizeWindows.length > 0;
+
+    //remove any arrange windows buttons that might be left over
+    if (arrangeBtn.length > 0) {
+      for (let btn of arrangeBtn) {
+        removeElement(btn);
+      }
+    }
+
+    //populate the resize div with windows for resizing
+    let resizeHTML = ``;
+    if (resizeWindows.checked) {
+      newValues.resizeWindows.forEach(window => {
+        resizeHTML += `<div class="clideWindow">
+          <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
+          <div>
+            <label for="windowName">Name</label>
+            <input type="text" class="windowName" value="${window.name}" />
+          </div>
+          <div>
+            <label for="x">X Position</label>
+            <input type="number" class="x number" value="${window.x}" />
+          </div>
+          <div>
+            <label for="y">Y Position</label>
+            <input type="number" class="y number" value="${window.y}" />
+          </div>
+          <div>
+            <label for="height">Vertical Resolution</label>
+            <input type="number" class="height number" value="${window.height}" />
+          </div>
+          <div>
+            <label for="width">Horizontal Resolution</label>
+            <input type="number" class="width number" value="${window.width}" /></div></div>`;
+      });  
+      resizeDiv.innerHTML = resizeHTML;
+      resizeDiv.outerHTML += `<button class="arrange" onclick="arrangeWindows(this)">Arrange Windows</button>`;
+    } else {
+      resizeDiv.innerHTML = null;
+    }
+}
+
 function buildWindowJSON(container) {
-  //create an array containing window objects
+  // create an array containing window objects
   let windowArr = [];
   let windowList = container.getElementsByClassName("clideWindow");
   for (let i = 0; i < windowList.length; i++) {
@@ -316,7 +395,7 @@ function buildWindowJSON(container) {
   return {windows: windowArr};
 }
 
-//saveToFile saves the json file using the browsers default behavior
+// saveToFile saves the json file using the browsers default behavior
 function saveToFile() {
   let textToSave = JSON.stringify(buildJSON(), null, 4);
   let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
@@ -336,7 +415,7 @@ function saveToFile() {
   downloadLink.click();
 }
 
-//populateConfig populates all the input fields in the editor window
+// populateConfig populates all the input fields in the editor window
 function populateConfig(clide) {
   user.value = clide.user;
   directory.value = clide.directory;
@@ -349,8 +428,8 @@ function populateConfig(clide) {
   fontPath.value = clide.fontPath ? clide.fontPath : "";
   fontSize.value = clide.fontSize;
 
-  //apply color values to inputs with hex conversion
-  //set to black and white if no colorscheme is set
+  // apply color values to inputs with hex conversion
+  // set to black and white if no colorscheme is set
   if (clide.colorScheme) {
     let bg = clide.colorScheme.terminalBG
       ? byteToHex(clide.colorScheme.terminalBG)
@@ -384,12 +463,12 @@ function populateConfig(clide) {
     directoryColor.value = "#FFFFFF";
   }
 
-  //build window html
+  // build window html
   if (clide.windows) {
     let html = "";
     clide.windows.forEach((window) => {
       html += `<div class="clideWindow">
-        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
         <div>
           <label for="windowName">Name</label>
           <input type="text" class="windowName" value="${window.name}" />
@@ -414,25 +493,25 @@ function populateConfig(clide) {
     windowContainer.innerHTML = html;
   }
 
-  //add trigger keys to list
+  // add trigger keys to list
   if (clide.triggerKeys) {
     let keyText = "";
     clide.triggerKeys.forEach((key) => {
-      keyText += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this)">
+      keyText += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this.parentNode)">
               X
             </button></li>`;
     });
     keyList.innerHTML = keyText;
   }
 
-  //build all command divs
+  // build all command divs
   cmdHTML = `<h1>Command Configuration</h1><button class="addCommand" onclick="addNewCommand()">Add Commmand</button>`;
   clide.commands.forEach(command => {
     let resizeHTML = "";
     if (command.resizeWindows) {
       command.resizeWindows.forEach(window => {
         resizeHTML += `<div class="clideWindow">
-          <button class="removeButton" onclick="removeElement(this)">X</button>
+          <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
           <div>
             <label for="windowName">Name</label>
             <input type="text" class="windowName" value="${window.name}" />
@@ -457,7 +536,9 @@ function populateConfig(clide) {
     
 
     cmdHTML += `<div class="command">
-        <button class="removeButton" onclick="removeElement(this)">X</button>
+        <button class="removeButton" onclick="removeElement(this.parentNode)">X</button>
+        <button class="moveUp" onclick="swapCommand(this)">&#8593;</button>
+        <button class="moveDown" onclick="swapCommand(this)">&#8595;</button>
         <input type="text" class="cmd" value="${command.cmd.replace(/"/g, '&quot;')}" />
         <label for="window">Window</label><input type="text" class="window" value="${
           command.window ? command.window : ""
@@ -498,26 +579,26 @@ function populateConfig(clide) {
           resizeHTML == "" ? "" : "checked"
         } /></div>
         <div class="resize">${resizeHTML == "" ? "" : resizeHTML}</div>
-        ${resizeHTML == "" ? "" : `<button onclick="arrangeWindows(this)">Arrange Windows</button>`}
+        ${resizeHTML == "" ? "" : `<button class="arrange" onclick="arrangeWindows(this)">Arrange Windows</button>`}
       </div>`;
   });
 
   commands.innerHTML = cmdHTML;
 }
 
-//show windows creates a div with all windows for resizing in a command
+// show windows creates a div with all windows for resizing in a command
 function showWindows(element) {
   let div = element.parentNode.parentNode.getElementsByClassName("resize");
   if (element.checked) {
     div[0].innerHTML = windowContainer.innerHTML;
-    div[0].outerHTML += `<button onclick="arrangeWindows(this)">Arrange Windows</button>`;
+    div[0].outerHTML += `<button class="arrange" onclick="arrangeWindows(this)">Arrange Windows</button>`;
   } else {
-    div[0].innerHTML = "";
-    div[0].nextSibling.outerHTML = "";
+    div[0].innerHTML = null;
+    div[0].nextSibling.outerHTML = null;
   }
 }
 
-//takes an rgba in the form of 255,255,255,255 and return a hex value
+// takes an rgba in the form of 255,255,255,255 and return a hex value
 function byteToHex(byteString) {
   split = byteString.split(",");
   while (split.length > 3) {
@@ -535,7 +616,7 @@ function byteToHex(byteString) {
   return hex;
 }
 
-//takes a hex value and returns an rgba in the form of 255,255,255,255
+// takes a hex value and returns an rgba in the form of 255,255,255,255
 function hexToByte(hexString) {
   bytes = [];
   split = [
@@ -549,9 +630,9 @@ function hexToByte(hexString) {
   return bytes.join(",") + ",255";
 }
 
-//sends the json data to run with clide
+// sends the json data to run with clide
 function runDemo() {
-  fetch("http://localhost:8080/run", {
+  fetch("http:// localhost:8080/run", {
     method: "POST",
     header: {
       "Content-Type": "application/json",
@@ -563,7 +644,7 @@ function runDemo() {
   });
 }
 
-//listens for a single key press and then removes the event listener
+// listens for a single key press and then removes the event listener
 function listenForOneKey(event) {
   document.removeEventListener(event.type, listenForOneKey);
   let key = event.key;
@@ -576,8 +657,32 @@ function listenForOneKey(event) {
   if (key.length == 1) {
     key = key.toUpperCase();
   }
-  keyList.innerHTML += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this)">
+  keyList.innerHTML += `<li class="triggerKey">${key}<button class="removeButtonSmall" onclick="removeElement(this.parentNode)">
         X
       </button></li>`;
   recordKey.innerText = "Record Keypress";
+}
+
+// swapCommand swaps two commands depending on if the move up or move down buttons are pressed
+function swapCommand(element) {
+  //store the input values of the passed in command
+  let thisCommand = storeCommandValues(element.parentNode);
+
+  if (element.classList.contains("moveUp")) {
+    if (!element.parentNode.previousElementSibling.classList.contains("addCommand")) {
+      //store the input values for the previous command
+      let previousCommand = storeCommandValues(element.parentNode.previousElementSibling);
+
+      //swap commands
+      updateCommandValues(element.parentNode, previousCommand);
+      updateCommandValues(element.parentNode.previousElementSibling, thisCommand);
+    }
+  } else if (element.parentNode.nextSibling) {
+    //store the input values for the next command
+    let nextCommand = storeCommandValues(element.parentNode.nextSibling);
+
+    //swap commands
+    updateCommandValues(element.parentNode, nextCommand);
+    updateCommandValues(element.parentNode.nextSibling, thisCommand);
+  }
 }
