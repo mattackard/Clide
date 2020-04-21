@@ -1,18 +1,19 @@
 {
     "user": "window-demo@clide",
     "directory": "/",
-    "typespeed": 100,
+    "typespeed": 40,
     "humanize": 0.9,
     "hideWarnings": false,
     "clearBeforeAll": false,
     "keyTriggerAll": false,
+    "hideWindows": true,
     "windows": [
         {
             "name": "Window1",
             "x": 0,
             "y": 0,
-            "height": 500,
-            "width": 960
+            "height": 1400,
+            "width": 2400
         },
         {
             "name": "Window2",
@@ -42,11 +43,95 @@
     ],
     "commands": [
         {
-            "cmd": "echo Typing into window 1",
+            "cmd": "echo Welcome to the clide window demo",
             "window": "Window1",
             "typed": true,
             "predelay": 500,
             "postdelay": 500
+        },
+        {
+            "cmd": "echo Clide can create multi-window demos to demonstrate applications that run in separate processes",
+            "window": "Window1",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500
+        },
+        {
+            "cmd": "echo Windows can be created, destroyed, and rearranged during a demo",
+            "window": "Window2",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500,
+            "resizeWindows": [
+                {
+                    "name": "Window1",
+                    "x": 0,
+                    "y": 0,
+                    "height": 1400,
+                    "width": 1200
+                },
+                {
+                    "name": "Window2",
+                    "x": 1200,
+                    "y": 0,
+                    "height": 1400,
+                    "width": 1200
+                }
+            ],
+            "hideWindow": true
+        },
+        {
+            "cmd": "echo Clide can also run processes asynchronously across different windows",
+            "window": "Window1",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500,
+            "resizeWindows": [
+                {
+                    "name": "Window1",
+                    "x": 0,
+                    "y": 0,
+                    "height": 1400,
+                    "width": 2400
+                }
+            ]
+        },
+        {
+            "cmd": "echo Typing into window 1",
+            "window": "Window1",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500,
+            "resizeWindows": [
+                {
+                    "name": "Window1",
+                    "x": 0,
+                    "y": 0,
+                    "height": 500,
+                    "width": 960
+                },
+                {
+                    "name": "Window2",
+                    "x": 960,
+                    "y": 0,
+                    "height": 500,
+                    "width": 960
+                },
+                {
+                    "name": "Window3",
+                    "x": 0,
+                    "y": 540,
+                    "height": 500,
+                    "width": 960
+                },
+                {
+                    "name": "Window4",
+                    "x": 960,
+                    "y": 540,
+                    "height": 500,
+                    "width": 960
+                }
+            ]
         },
         {
             "cmd": "echo Typing into window 2",
@@ -82,6 +167,7 @@
             "window": "Window2",
             "typed": true,
             "async": true,
+            "hideWindow": true,
             "predelay": 500,
             "postdelay": 500
         },
@@ -90,6 +176,7 @@
             "window": "Window3",
             "typed": true,
             "async": true,
+            "hideWindow": true,
             "predelay": 500,
             "postdelay": 500
         },
@@ -97,8 +184,25 @@
             "cmd": "echo Async typing into window 4",
             "window": "Window4",
             "typed": true,
+            "hideWindow": true,
             "predelay": 500,
-            "postdelay": 5000
+            "postdelay": 3000
+        },
+        {
+            "cmd": "echo To see how to add this functionality to your own demo, look at the windows.json file in /usr/share/clide/examples/ or open the same file using the clide editor",
+            "window": "Window1",
+            "typed": true,
+            "predelay": 500,
+            "postdelay": 500,
+            "resizeWindows": [
+                {
+                    "name": "Window1",
+                    "x": 0,
+                    "y": 0,
+                    "height": 1400,
+                    "width": 2400
+                }
+            ]
         }
     ]
 }
