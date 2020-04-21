@@ -15,9 +15,7 @@ An alternative to using the binary is to clone the github project and run clide 
 
 ## Installation
 
-The github release file is a debian package that can be installed with the built-in software manager available in debian operating systems. To install the .deb file from within the terminal run:
-
-`sudo dpkg -i clide_1.2.0.deb`
+The github release contains .deb and .rpm packages for installation on debain and rpm based linux distributions. To install clide, go to the [clide homepage](https://mattackard.github.io/Clide) and click the download for your operating system. Alternatively you can clone the repository or download the source code and use the makefile command `make install` to install clide from the source code. See below for dependency information if you want to install clide from the source code.
 
 **Running a demo from a built binary:**
 

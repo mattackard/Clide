@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2020-04-21
+
+### Added
+
+- support for pipes and redirects in clide commands
+- fixed bug causing quotes in commands to not display correctly in the editor
+- added ability to hide, show, resize, and repoisition windows during demos
+- clide window now scrolls with content when commands vertically overflow
+- added window arrangement button to editor for easier window positioning
+- clide demos can now be run inside another clide demo
+- sudo password is requested before the demo if any sudo commands are present
+- support reordering command blocks in the editor
+
+### Changed
+
+- godoc reference link for clide package added to readme
+- docs updated with added json fields
+- more clear feedback when saving a demo json in the editor
+
 ## [1.2.0] - 2020-04-6
 
 ### Added
@@ -74,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue templates for bugs and features
 - Preliminary README.md
 
+[1.3.0]: https://github.com/mattackard/clide/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mattackard/clide/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mattackard/clide/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mattackard/clide/compare/v0.0.2...v1.0.0
