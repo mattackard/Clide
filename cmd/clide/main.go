@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -37,6 +39,9 @@ func main() {
 	}
 	defer sdl.Quit()
 
+	// stop go from running sdl processes from main in other threads
+	runtime.LockOSThread()
+
 	// create a channel to exit out of goroutines when program exits
 	exitChan := make(chan bool, goroutineMax)
 
@@ -47,7 +52,7 @@ func main() {
 			panic(err)
 		}
 		noFileError(cfg)
-		exit(10, exitChan)
+		exit(10000, exitChan)
 	}
 
 	// support missing file extension
@@ -99,46 +104,42 @@ func main() {
 		panic(err)
 	}
 
-	// reset window background color for each window
-	for _, typer := range typerList {
-		bgColor, err := clide.StringToColor(cfg.ColorScheme.TerminalBG)
-		if err != nil {
-			panic(err)
-		}
-		err = typer.ClearWindow(bgColor)
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	cfg.TyperList = typerList
 
-	// listen for quit events to close program
-	go listenForQuit(exitChan)
+	// reset window background color for each window
+	err = cfg.ClearAllWindows()
+	if err != nil {
+		panic(err)
+	}
 
 	// run each command in the commands slice
-	for _, cmd := range cfg.Commands {
-		// add async commands to goroutine count
-		if cmd.Async {
-			goroutineCount++
-		}
+	go func() {
+		for _, cmd := range cfg.Commands {
+			// add async commands to goroutine count
+			if cmd.Async {
+				goroutineCount++
+			}
 
-		// find the typer for the window specified in cmd
-		index := 0
-		if cmd.Window != "" {
-			for i, v := range cfg.TyperList {
-				if v.Window.GetTitle() == cmd.Window {
-					index = i
+			// find the typer for the window specified in cmd
+			index := 0
+			if cmd.Window != "" {
+				for i, v := range cfg.TyperList {
+					if v.Window.GetTitle() == cmd.Window {
+						index = i
+					}
 				}
 			}
-		}
 
-		err = cmd.Run(&cfg, typerList[index], exitChan)
-		if err != nil {
-			panic(err)
+			err = cmd.Run(&cfg, typerList[index], exitChan)
+			if err != nil {
+				panic(err)
+			}
 		}
-	}
-	exit(1, exitChan)
+		exit(100, exitChan)
+	}()
+
+	// listen for quit events to close program
+	windowListen(&cfg, exitChan)
 }
 
 // noFileError createse a window containing an error message when no file is passed to clide
@@ -153,9 +154,13 @@ func noFileError(cfg clide.Config) {
 	if err != nil {
 		panic(err)
 	}
+	window.Show()
 
 	// initialize typer values
-	typer := cfg.NewTyper(window)
+	typer, err := cfg.NewTyper(window)
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println("You must provide a clide configured json file to run a demo.")
 	err = typer.Print("You must provide a clide configured json file to run a demo.", sdl.Color{R: 255, G: 100, B: 100, A: 255})
@@ -182,46 +187,44 @@ func noFileError(cfg clide.Config) {
 func checkAlternateFileLocations(cfg clide.Config, exitChan chan bool) (*os.File, error) {
 	var file *os.File
 
-	// open a window for error message
-	window, err := clide.NewWindow("Clide", clide.Position{
-		X: 0,
-		Y: 0,
-		H: 800,
-		W: 1000,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// initialize typer values
-	typer := cfg.NewTyper(window)
-
 	errorText := fmt.Sprintf("File %s does not exists in current directory, checking /usr/share/clide/examples/", os.Args[1])
 	log.Println(errorText)
-	err = typer.Print(errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
-	if err != nil {
-		return nil, err
-	}
 
 	// if not check usr/share/clide
-	file, err = os.Open("/usr/share/clide/examples/" + os.Args[1])
+	file, err := os.Open("/usr/share/clide/examples/" + os.Args[1])
 	if err != nil {
-		errorText = fmt.Sprintf("File %s does not exists /usr/share/clide/examples/. Checking for clide examples on the web with name %s ...", os.Args[1], os.Args[1])
-		log.Println(errorText)
+		// open a window for error message
+		window, err := clide.NewWindow("Clide", clide.Position{
+			X: 0,
+			Y: 0,
+			H: 800,
+			W: 1000,
+		})
+		if err != nil {
+			return nil, err
+		}
+		window.Show()
+
+		// initialize typer values
+		typer, err := cfg.NewTyper(window)
+		if err != nil {
+			panic(err)
+		}
+
+		errorText = fmt.Sprintf("File %s could not be found in current directory or in /usr/share/clide/examples/", os.Args[1])
 		typer.Pos.X = 5
 		err = typer.Print(errorText, sdl.Color{R: 255, G: 100, B: 100, A: 255})
 		if err != nil {
 			return nil, err
 		}
+		return nil, errors.New(errorText)
 	}
-
-	// if demo is found in an alternate location, destroy error window
-	window.Destroy()
 	return file, nil
 }
 
-// listenForQuit watches for a quit event on any window and exits clide with status 1 when found
-func listenForQuit(exitChan chan bool) {
+// windowListen watches for window events on any window and executes an action for window events.
+// Exits clide with status 1 when exit event is triggered
+func windowListen(cfg *clide.Config, exitChan chan bool) {
 	for {
 		// keep checking keyboard events until a trigger key is pressed
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -229,27 +232,42 @@ func listenForQuit(exitChan chan bool) {
 
 			// if quit event, close program
 			case *sdl.QuitEvent:
-				exit(1, exitChan)
-			// if any window is closed, close program
+				exit(100, exitChan)
+
 			case *sdl.WindowEvent:
+				// if any window is closed, close program
 				if target.Event == sdl.WINDOWEVENT_CLOSE {
-					exit(1, exitChan)
+					exit(100, exitChan)
+				}
+				// if any window is minimized and then restored, restore surface
+				if target.Event == sdl.WINDOWEVENT_RESTORED || target.Event == sdl.WINDOW_SHOWN {
+					window, err := sdl.GetWindowFromID(target.WindowID)
+					if err != nil {
+						log.Println("window event error ", err)
+					} else {
+						for _, typer := range cfg.TyperList {
+							if typer.Window == window {
+								typer.Window.UpdateSurface()
+							}
+						}
+
+					}
 				}
 			}
 		}
 	}
 }
 
-// exit stops the program after delaying for x seconds
+// exit stops the program after delaying for x milliseconds
 func exit(delay int, exit chan bool) {
-	// send exit signal to all async commands
+	// send exit signal to all goroutines
 	for goroutineCount > 0 {
 		exit <- true
 		goroutineCount--
 	}
 
 	// used to give time for goroutines to exit
-	time.Sleep(time.Second * time.Duration(delay))
+	time.Sleep(time.Millisecond * time.Duration(delay))
 
 	os.Exit(0)
 }
