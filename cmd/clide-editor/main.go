@@ -367,11 +367,11 @@ func listenForResizeOrQuit() {
 			case *sdl.QuitEvent:
 				return
 			// if any window is closed, close program
-			// if any window is resized, update the window surface
 			case *sdl.WindowEvent:
 				if target.Event == sdl.WINDOWEVENT_CLOSE {
 					return
 				}
+				// if any window is resized, update the window surface
 				if target.Event == sdl.WINDOWEVENT_RESIZED {
 					window, err := sdl.GetWindowFromID(target.WindowID)
 					if err != nil {
@@ -391,6 +391,14 @@ func listenForResizeOrQuit() {
 						panic(err)
 					}
 
+					window.UpdateSurface()
+				}
+				// if any window is minimized and then restored, restore surface
+				if target.Event == sdl.WINDOWEVENT_RESTORED {
+					window, err := sdl.GetWindowFromID(target.WindowID)
+					if err != nil {
+						panic(err)
+					}
 					window.UpdateSurface()
 				}
 			// keyboard keys to quit
