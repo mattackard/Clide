@@ -72,7 +72,10 @@ func (cfg Config) Validate() (Config, error) {
 	}
 
 	// initialize typer values
-	typer := cfg.NewTyper(window)
+	typer, err := cfg.NewTyper(window)
+	if err != nil {
+		return cfg, err
+	}
 
 	// if no windows were provided in json, create one
 	if len(cfg.Windows) == 0 {
@@ -105,7 +108,7 @@ func (cfg Config) Validate() (Config, error) {
 			UserText:      "0,150,255,255",
 			DirectoryText: "150,255,150,255",
 			PrimaryText:   "220,220,220,255",
-			TerminalBG:    "30,30,30,255",
+			TerminalBG:    "0,0,0,255",
 		}
 	}
 
