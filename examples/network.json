@@ -6,26 +6,27 @@
     "hideWarnings": false,
     "clearBeforeAll": false,
     "keyTriggerAll": false,
+    "hideWindows": true,
     "windows": [
         {
             "name": "Client",
-            "x": 0,
-            "y": 0,
+            "x": 2,
+            "y": 73,
             "height": 1080,
             "width": 960
         },
         {
             "name": "Server1",
-            "x": 960,
-            "y": 0,
-            "height": 520,
+            "x": 962,
+            "y": 73,
+            "height": 533,
             "width": 960
         },
         {
             "name": "Server2",
-            "x": 960,
-            "y": 540,
-            "height": 520,
+            "x": 964,
+            "y": 631,
+            "height": 522,
             "width": 960
         }
     ],
