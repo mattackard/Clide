@@ -7,20 +7,26 @@
     "clearBeforeAll": false,
     "keyTriggerAll": false,
     "hideWindows": true,
+    "colorScheme": {
+        "userText": "0,150,255,255",
+        "directoryText": "150,255,150,255",
+        "primaryText": "220,220,220,255",
+        "terminalBG": "0,0,0,255"
+    },
     "windows": [
         {
             "name": "Window1",
             "x": 0,
             "y": 0,
             "height": 1400,
-            "width": 2400
+            "width": 1200
         },
         {
             "name": "Window2",
-            "x": 960,
+            "x": 1200,
             "y": 0,
-            "height": 500,
-            "width": 960
+            "height": 1400,
+            "width": 1200
         },
         {
             "name": "Window3",
@@ -62,22 +68,6 @@
             "typed": true,
             "predelay": 500,
             "postdelay": 500,
-            "resizeWindows": [
-                {
-                    "name": "Window1",
-                    "x": 0,
-                    "y": 0,
-                    "height": 1400,
-                    "width": 1200
-                },
-                {
-                    "name": "Window2",
-                    "x": 1200,
-                    "y": 0,
-                    "height": 1400,
-                    "width": 1200
-                }
-            ],
             "hideWindow": true
         },
         {
@@ -190,17 +180,31 @@
         },
         {
             "cmd": "echo To see how to add this functionality to your own demo, look at the windows.json file in /usr/share/clide/examples/ or open the same file using the clide editor",
-            "window": "Window1",
             "typed": true,
+            "window": "Window1",
             "predelay": 500,
             "postdelay": 500,
             "resizeWindows": [
                 {
                     "name": "Window1",
-                    "x": 0,
-                    "y": 0,
-                    "height": 1400,
-                    "width": 2400
+                    "x": 1,
+                    "y": 49,
+                    "height": 1285,
+                    "width": 2161
+                },
+                {
+                    "name": "Window2",
+                    "x": 2163,
+                    "y": 49,
+                    "height": 433,
+                    "width": 349
+                },
+                {
+                    "name": "Window3",
+                    "x": 2162,
+                    "y": 508,
+                    "height": 414,
+                    "width": 354
                 }
             ]
         }
