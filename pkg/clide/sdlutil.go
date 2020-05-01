@@ -214,8 +214,8 @@ func (cfg Config) BuildTyperList() ([]*Typer, error) {
 
 		typerList = append(typerList, typer)
 
-		if !cfg.HideWindows {
-			window.Show()
+		if cfg.HideWindows {
+			window.Hide()
 		}
 	}
 	return typerList, nil
