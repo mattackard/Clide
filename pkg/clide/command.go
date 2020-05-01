@@ -54,7 +54,6 @@ func (cmd Command) IsInstalled() bool {
 
 // Run runs a cli command with options to wait before and after execution
 func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
-
 	err := cmd.Validate()
 	if err != nil {
 		typer.Print(err.Error(), sdl.Color{R: 255, G: 0, B: 0, A: 255})
@@ -65,8 +64,22 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 			warning := fmt.Sprintf("WARNING: %s is not installed! Skipping command: '%s'.\n", strings.Split(cmd.CmdString, " ")[0], cmd.CmdString)
 			err = typer.Print(warning, sdl.Color{R: 255, G: 0, B: 0, A: 255})
 			if err != nil {
-				panic(err)
+				return err
 			}
+		}
+	}
+
+	// clear terminal if set in config or command
+	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
+		var err error
+		bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
+		if err != nil {
+			return err
+		}
+
+		err = typer.ClearWindow(bgColor)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -82,21 +95,8 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 			cfg.ClearAllWindows()
 		}
 	}
+
 	typer.Window.Show()
-
-	// clear terminal if set in config or command
-	if cmd.ClearBeforeRun || cfg.ClearBeforeAll {
-		var err error
-		bgColor, err := StringToColor(cfg.ColorScheme.TerminalBG)
-		if err != nil {
-			return err
-		}
-
-		err = typer.ClearWindow(bgColor)
-		if err != nil {
-			return err
-		}
-	}
 
 	// get text color
 	textColor, err := StringToColor(cfg.ColorScheme.PrimaryText)
@@ -121,13 +121,17 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 			return err
 		}
 	} else if cmd.Async {
+		typer.Window.UpdateSurface()
+
 		go cmd.runAsync(command, cfg, typer, textColor, exitChan)
 	} else {
+		typer.Window.UpdateSurface()
+
 		// type the command into the console and wait for it to finish typing before further execution
-		var err error
-		err = writeCommand(cmd, *cfg, typer)
+		// var err error
+		err = writeCommand(cmd, cfg, typer)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		// special handling for cd commands
@@ -182,6 +186,8 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 		}
 	}
 
+	// give any output some time to print to the window
+	time.Sleep(time.Millisecond * 50)
 	return nil
 }
 
@@ -189,7 +195,7 @@ func (cmd Command) Run(cfg *Config, typer *Typer, exitChan chan bool) error {
 func (cmd Command) runAsync(command *exec.Cmd, cfg *Config, typer *Typer, textColor sdl.Color, exitChan chan bool) error {
 	// type the command into the console and wait for it to finish typing before further execution
 	var err error
-	err = writeCommand(cmd, *cfg, typer)
+	err = writeCommand(cmd, cfg, typer)
 	if err != nil {
 		return err
 	}
@@ -238,8 +244,6 @@ func (cmd Command) runAsync(command *exec.Cmd, cfg *Config, typer *Typer, textCo
 
 	command.Process.Signal(os.Interrupt)
 
-	// give any error messages some time to print to the window
-	time.Sleep(time.Millisecond * 10)
 	return nil
 }
 
@@ -253,7 +257,6 @@ func printOutputs(output io.ReadCloser, errOutput io.ReadCloser, typer *Typer, t
 			typer.Pos.X = 5
 			typer.Print(line, textColor)
 			typer.mutex.Unlock()
-
 		}
 	}()
 	go func() {
@@ -271,26 +274,19 @@ func printOutputs(output io.ReadCloser, errOutput io.ReadCloser, typer *Typer, t
 
 // ClearWindow removes all content on the window specified in typer
 func (typer *Typer) ClearWindow(color sdl.Color) error {
-	var surface *sdl.Surface
 	var err error
 
-	// get surface info
-	surface, err = typer.Window.GetSurface()
-	if err != nil {
-		return err
-	}
-
-	err = surface.Blit(nil, surface, &sdl.Rect{X: 0, Y: -typer.Pos.Y, W: 0, H: 0})
-	if err != nil {
-		return err
-	}
+	// err = typer.Surface.Blit(nil, typer.Surface, &sdl.Rect{X: 0, Y: -typer.Pos.Y, W: 0, H: 0})
+	// if err != nil {
+	// 	return err
+	// }
 
 	// create a rectangle that fills the screen and make it black
 	rect := sdl.Rect{
 		X: 0,
 		Y: 0,
-		W: surface.W,
-		H: surface.H,
+		W: typer.Surface.W,
+		H: typer.Surface.H,
 	}
 
 	// set color to correct for the weirdness in the Uint32 conversion
@@ -300,16 +296,21 @@ func (typer *Typer) ClearWindow(color sdl.Color) error {
 		B: color.G,
 		A: color.B,
 	}
-	surface.FillRect(&rect, colorFix.Uint32())
+	err = typer.Surface.FillRect(&rect, colorFix.Uint32())
+	if err != nil {
+		return err
+	}
 
 	// draw the rect and update typer position
-	typer.Window.UpdateSurface()
 	typer.Pos = Position{
 		X: 5,
 		Y: 5,
 		H: 0,
 		W: 0,
 	}
+	typer.Window.UpdateSurface()
+	newSurface, err := typer.Window.GetSurface()
+	typer.Surface = newSurface
 
 	return nil
 }
