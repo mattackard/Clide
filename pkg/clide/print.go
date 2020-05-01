@@ -7,8 +7,7 @@ import (
 )
 
 // prompt returns a string used to emulate a terminal prompt
-func printPrompt(cfg Config, typer *Typer) error {
-
+func printPrompt(cfg *Config, typer *Typer) error {
 	// set colors for user, directory, and primary text
 	userColor, err := StringToColor(cfg.ColorScheme.UserText)
 	directoryColor, err := StringToColor(cfg.ColorScheme.DirectoryText)
@@ -18,6 +17,19 @@ func printPrompt(cfg Config, typer *Typer) error {
 	}
 
 	lineY := typer.Pos.Y
+
+	// check if the background color matches the one defined in config
+	// clear window and reapply background color if it doesnt match
+	// r, g, b, a := typer.Surface.At(0, 0).RGBA()
+	// currentBG := fmt.Sprintf("%d,%d,%d,%d", uint8(b), uint8(g), uint8(r), uint8(a))
+
+	// if currentBG != cfg.ColorScheme.TerminalBG {
+	// 	desiredBG, err := StringToColor(cfg.ColorScheme.TerminalBG)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	typer.ClearWindow(desiredBG)
+	// }
 
 	// print promt to terminal window using the user specified color for each section of the prompt
 	err = typer.Print(cfg.User, userColor)
@@ -56,12 +68,14 @@ func printPrompt(cfg Config, typer *Typer) error {
 		lineY -= int32(cfg.FontSize) + 2
 	}
 	typer.Pos.Y = lineY
+	typer.Window.UpdateSurface()
 
 	return nil
 }
 
 // writeCommand prints out the given command and emulates a terminal prompt before it
-func writeCommand(cmd Command, cfg Config, typer *Typer) error {
+func writeCommand(cmd Command, cfg *Config, typer *Typer) error {
+	time.Sleep(time.Millisecond * time.Duration(10))
 
 	// print terminal prompt
 	typer.Pos.X = 5
