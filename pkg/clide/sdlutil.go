@@ -13,6 +13,7 @@ import (
 // Typer holds all information neeeded to type or print text to a window
 type Typer struct {
 	Window   *sdl.Window
+	Surface  *sdl.Surface
 	Pos      Position
 	Font     Font
 	Speed    int
@@ -37,21 +38,15 @@ type Font struct {
 // Type prints the text to a sdl2 window and simulates a user typing the string
 // it returns a position struct describing the completed surface
 func (typer *Typer) Type(text string, color sdl.Color) error {
-	// split string into array of cingle characters
+	// split string into array of single characters
 	split := strings.Split(text, "")
 
-	var surface *sdl.Surface
 	var font *ttf.Font
 	var textSurface *sdl.Surface
 
 	var err error
 	lastX := typer.Pos.X
 	lastY := typer.Pos.Y
-
-	// get surface info
-	if surface, err = typer.Window.GetSurface(); err != nil {
-		return err
-	}
 
 	// Load the font for our text
 	if font, err = ttf.OpenFont(typer.Font.Path, typer.Font.Size); err != nil {
@@ -76,10 +71,10 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 		defer textSurface.Free()
 
 		// Wrap text if it's too long
-		if lastX > surface.W-15 || []byte(char)[0] == []byte("\n")[0] {
+		if lastX > typer.Surface.W-15 || []byte(char)[0] == []byte("\n")[0] {
 			lastX = 5
-			if lastY+textSurface.H+2 > surface.H {
-				scrollBottom(surface, textSurface)
+			if lastY+textSurface.H+2 > typer.Surface.H {
+				scrollBottom(typer.Surface, textSurface)
 				lastY -= textSurface.H + 2
 			} else {
 				lastY += textSurface.H + 2
@@ -88,12 +83,12 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 
 		// Dont print newline characters
 		if []byte(char)[0] != []byte("\n")[0] {
-			if lastY+textSurface.H+2 > surface.H {
-				scrollBottom(surface, textSurface)
+			if lastY+textSurface.H+2 > typer.Surface.H {
+				scrollBottom(typer.Surface, textSurface)
 				lastY -= textSurface.H + 2
 			}
 
-			err := textSurface.Blit(nil, surface, &sdl.Rect{X: lastX, Y: lastY, W: 0, H: 0})
+			err := textSurface.Blit(nil, typer.Surface, &sdl.Rect{X: lastX, Y: lastY, W: 0, H: 0})
 			if err != nil {
 				return err
 			}
@@ -104,14 +99,15 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 			typer.Window.UpdateSurface()
 		}
 	}
+
 	lastY += textSurface.H + 2
 
 	// return position for next line to be typed from
 	typer.Pos = Position{
 		X: lastX,
 		Y: lastY,
-		W: surface.W,
-		H: surface.H,
+		W: typer.Surface.W,
+		H: typer.Surface.H,
 	}
 	return nil
 }
@@ -120,7 +116,6 @@ func (typer *Typer) Type(text string, color sdl.Color) error {
 func (typer *Typer) Print(text string, color sdl.Color) error {
 	split := strings.Split(text, "\n")
 
-	var surface *sdl.Surface
 	var font *ttf.Font
 	var textSurface *sdl.Surface
 
@@ -128,9 +123,13 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	var lastY int32
 	lastY = typer.Pos.Y
 
-	if surface, err = typer.Window.GetSurface(); err != nil {
+	typer.Window.UpdateSurface()
+
+	newSurface, err := typer.Window.GetSurface()
+	if err != nil {
 		return err
 	}
+	typer.Surface = newSurface
 
 	// Load the font for our text
 	if font, err = ttf.OpenFont(typer.Font.Path, typer.Font.Size); err != nil {
@@ -148,22 +147,20 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 			defer textSurface.Free()
 
 			// check if its planning to print to a newline here?
-			if lastY+textSurface.H+2 > surface.H {
-				scrollBottom(surface, textSurface)
+			if lastY+textSurface.H+2 > typer.Surface.H {
+				scrollBottom(typer.Surface, textSurface)
 				lastY -= textSurface.H + 2
 			}
 
-			err := textSurface.Blit(nil, surface, &sdl.Rect{X: typer.Pos.X, Y: lastY, W: 0, H: 0})
+			err := textSurface.Blit(nil, typer.Surface, &sdl.Rect{X: typer.Pos.X, Y: lastY, W: 0, H: 0})
 			if err != nil {
 				return err
 			}
 
 			lastY += textSurface.H + 2
-
 		}
 	}
 
-	// Update the window surface with what we have drawn
 	err = typer.Window.UpdateSurface()
 	if err != nil {
 		return err
@@ -175,8 +172,8 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 		typer.Pos = Position{
 			X: 5,
 			Y: lastY,
-			W: surface.W,
-			H: surface.H,
+			W: typer.Surface.W,
+			H: typer.Surface.H,
 		}
 		return nil
 	}
@@ -185,8 +182,8 @@ func (typer *Typer) Print(text string, color sdl.Color) error {
 	typer.Pos = Position{
 		X: typer.Pos.X + textSurface.W + 1,
 		Y: lastY,
-		W: surface.W,
-		H: surface.H,
+		W: typer.Surface.W,
+		H: typer.Surface.H,
 	}
 	return nil
 }
@@ -210,12 +207,15 @@ func (cfg Config) BuildTyperList() ([]*Typer, error) {
 		cfg.Windows[i].Window = window
 
 		// initialize typer values
-		typer := cfg.NewTyper(window)
+		typer, err := cfg.NewTyper(window)
+		if err != nil {
+			return nil, err
+		}
 
 		typerList = append(typerList, typer)
 
-		if cfg.HideWindows {
-			window.Hide()
+		if !cfg.HideWindows {
+			window.Show()
 		}
 	}
 	return typerList, nil
@@ -223,7 +223,7 @@ func (cfg Config) BuildTyperList() ([]*Typer, error) {
 
 // ListenForKey blocks execution until a key is pressed.
 // Use in a goroutine to watch in the background
-func ListenForKey(cfg Config) {
+func ListenForKey(cfg *Config) {
 	pressed := false
 	for !pressed {
 		// keep checking keyboard events until a trigger key is pressed
@@ -246,7 +246,7 @@ func NewWindow(title string, pos Position) (*sdl.Window, error) {
 	var err error
 
 	// Create a window for us to draw the text on
-	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE); err != nil {
+	if window, err = sdl.CreateWindow(title, pos.X, pos.Y, pos.W, pos.H, sdl.WINDOW_RESIZABLE); err != nil {
 		return nil, err
 	}
 
@@ -260,9 +260,14 @@ func NewWindow(title string, pos Position) (*sdl.Window, error) {
 }
 
 // NewTyper creates a new typer referencing the given window
-func (cfg Config) NewTyper(window *sdl.Window) *Typer {
+func (cfg Config) NewTyper(window *sdl.Window) (*Typer, error) {
+	surface, err := window.GetSurface()
+	if err != nil {
+		return nil, err
+	}
 	typer := Typer{
-		Window: window,
+		Window:  window,
+		Surface: surface,
 		Pos: Position{
 			X: 5,
 			Y: 5,
@@ -276,7 +281,7 @@ func (cfg Config) NewTyper(window *sdl.Window) *Typer {
 		Speed:    cfg.TypeSpeed,
 		Humanize: cfg.Humanize,
 	}
-	return &typer
+	return &typer, nil
 }
 
 // getKeyDelay calculates and returns a time to wait based on type speed and humanization ratio
