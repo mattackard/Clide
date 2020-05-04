@@ -50,7 +50,7 @@ The demo files in the `examples` folder is a good place to start looking at the 
 ## Built With
 
 - [Go](http://golang.org) - The Go programming language
-- [go-sdl2](github.com/veandco/go-sdl2) - Clide terminal and window management
+- [go-sdl2](https://github.com/veandco/go-sdl2) - Clide terminal and window management
 - [webview](https://github.com/zserge/webview) - Creating the clide-editor GUI
 
 ## Versioning
