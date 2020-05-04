@@ -6,7 +6,7 @@
   "hideWarnings": false,
   "clearBeforeAll": false,
   "keyTriggerAll": false,
-  "fontPath": "assets/UbuntuMono-B.ttf",
+  "fontPath": "/usr/share/clide/assets/UbuntuMono-B.ttf",
   "fontSize": 18,
   "colorScheme": {
     "userText": "0,150,255,255",
